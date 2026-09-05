@@ -72,7 +72,7 @@ ROUND_CONFIGS = {
         "lora_r": 8,
         "lora_alpha": 16,
         "save_steps": 100,
-        "resume_from": "r1",
+        "resume_from": "r1_warmup",
         "load_best_model": True,
     },
     "3a": {  # MCQ Upgrade
@@ -87,7 +87,7 @@ ROUND_CONFIGS = {
         "lora_r": 8,
         "lora_alpha": 16,
         "save_steps": 80,
-        "resume_from": "r2",
+        "resume_from": "r2_binary_vqa",
     },
     "3b": {  # Captioning (branch from r2)
         "name": "r3b_captioning",
@@ -102,7 +102,7 @@ ROUND_CONFIGS = {
         "lora_alpha": 32,
         "max_new_tokens": 256,
         "save_steps": 80,
-        "resume_from": "r2",
+        "resume_from": "r2_binary_vqa",
     },
     4: {  # Grounding
         "name": "r4_grounding",
@@ -116,7 +116,7 @@ ROUND_CONFIGS = {
         "lora_r": 16,
         "lora_alpha": 32,
         "save_steps": 90,
-        "resume_from": "r2",
+        "resume_from": "r2_binary_vqa",
     },
     5: {  # Change Detection
         "name": "r5_change",
@@ -130,7 +130,7 @@ ROUND_CONFIGS = {
         "lora_r": 8,
         "lora_alpha": 16,
         "save_steps": 70,
-        "resume_from": "r2",
+        "resume_from": "r2_binary_vqa",
         "dual_image": True,
     },
     6: {  # Multi-Task Fusion ★ FINAL
@@ -180,7 +180,19 @@ def get_resume_adapter_path(drive_root: str, resume_from: Optional[str]) -> Opti
     """Get adapter path to resume from (previous round's best checkpoint)."""
     if resume_from is None:
         return None
-    ckpt_dir = f"{drive_root}/ckpt/{resume_from}"
+    
+    alias_map = {
+        "r1": "r1_warmup",
+        "r2": "r2_binary_vqa",
+        "r3a": "r3a_mcq",
+        "r3b": "r3b_captioning",
+        "r4": "r4_grounding",
+        "r5": "r5_change",
+        "r6": "r6_fusion",
+    }
+    target = alias_map.get(resume_from, resume_from)
+    ckpt_dir = f"{drive_root}/ckpt/{target}"
+    
     # Look for 'best' subfolder first, then latest checkpoint
     best = f"{ckpt_dir}/best"
     if Path(best).exists():
