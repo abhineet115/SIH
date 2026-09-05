@@ -313,13 +313,18 @@ def train_round(
     training_args = TrainingArguments(**args_dict)
 
     # ── Trainer ───────────────────────────────────────────────────────────────
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
-        tokenizer=tokenizer,
-    )
+    trainer_kwargs = {
+        "model": model,
+        "args": training_args,
+        "train_dataset": train_dataset,
+        "eval_dataset": eval_dataset,
+    }
+    if "processing_class" in Trainer.__init__.__code__.co_varnames:
+        trainer_kwargs["processing_class"] = tokenizer
+    else:
+        trainer_kwargs["tokenizer"] = tokenizer
+
+    trainer = Trainer(**trainer_kwargs)
 
     print(f"[Round {round_id}] Starting training...")
     trainer.train(resume_from_checkpoint=resume_ckpt)
