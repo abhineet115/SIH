@@ -1,0 +1,487 @@
+[
+  {
+    "PS Number": "SIH26001",
+    "Problem Statement Title": "AI-Based early warning and landslide Risk Monitoring System in NER",
+    "Organization": "Ministry of Development of North Eastern Region (MDoNER)"
+  },
+  {
+    "PS Number": "SIH26002",
+    "Problem Statement Title": "Al-Based Smart Logistics and Accessibility Intelligence Platform for North Eastern Region (NER)",
+    "Organization": "Ministry of Development of North Eastern Region (MDoNER)"
+  },
+  {
+    "PS Number": "SIH26006",
+    "Problem Statement Title": "Development of an Intelligent Freight Forecasting Model for Optimized Vessel Chartering and Bulk Cargo Procurement from overseas to East Coast of India",
+    "Organization": "Ministry of Steel"
+  },
+  {
+    "PS Number": "SIH26009",
+    "Problem Statement Title": "Using AI/ML and Space Technology to Identify Manganese Reserves and Overcome Production Shortfalls.",
+    "Organization": "Ministry of Steel"
+  },
+  {
+    "PS Number": "SIH26012",
+    "Problem Statement Title": "AI-Based Automated Urban Parcel Mapping and Cadastral Feature Extraction System using Drone lmagery",
+    "Organization": "Ministry of Rural Development"
+  },
+  {
+    "PS Number": "SIH26013",
+    "Problem Statement Title": "Automated lntegration and lntelligent Harmonization of Multi-source Geospatial Data for urban Land Record Management.",
+    "Organization": "Ministry of Rural Development"
+  },
+  {
+    "PS Number": "SIH26017",
+    "Problem Statement Title": "Predictive Analytics System for Early Detection of Land Acquisition Delays",
+    "Organization": "Ministry of Rural Development"
+  },
+  {
+    "PS Number": "SIH26019",
+    "Problem Statement Title": "National Digital Platform for Research, Policy Innovation, and Evidence-Based Land Governance",
+    "Organization": "Ministry of Rural Development"
+  },
+  {
+    "PS Number": "SIH26021",
+    "Problem Statement Title": "Honey Chain: A block chain-based system for honey traceability and smart beekeeping management.",
+    "Organization": "Ministry of MSME"
+  },
+  {
+    "PS Number": "SIH26023",
+    "Problem Statement Title": "AI-Powered Geological, Mining and other Reporting Solution for CMPDI/CIL subsidiaries",
+    "Organization": "Ministry of Coal"
+  },
+  {
+    "PS Number": "SIH26024",
+    "Problem Statement Title": "AI-Based Smart Governance and Compliance Monitoring System for Coal Mines",
+    "Organization": "Ministry of Coal"
+  },
+  {
+    "PS Number": "SIH26028",
+    "Problem Statement Title": "Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains",
+    "Organization": "Ministry of Railways"
+  },
+  {
+    "PS Number": "SIH26031",
+    "Problem Statement Title": "Quality assessment and grading of onions are often subjective and vary across procurement centers, resulting in disputes and inconsistencies.",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26032",
+    "Problem Statement Title": "Farmers often face long waiting times, lack of information regarding procurement schedules, and uncertainty about procurement status.",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26033",
+    "Problem Statement Title": "Multiple intermediaries reduce farmers earnings and increase consumer prices.",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26034",
+    "Problem Statement Title": "Software System to check compliance of Packaged Commodities under Legal Metrology(Packaged Commodities) Rules, 2011 by scanning products, images and labels.",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26035",
+    "Problem Statement Title": "Development of a Software Program/Application for Generation of Test Reports for Non-Automatic Weighing Instruments (NAWI) as per OIML Recommendation R- 76",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26037",
+    "Problem Statement Title": "Adaptive Path Planning and Collision Avoidance for Autonomous Vehicles on Unstructured Indian Roads",
+    "Organization": "MathWorks"
+  },
+  {
+    "PS Number": "SIH26041",
+    "Problem Statement Title": "AR-Based Vocational Training Simulator for Industrial Safety in Jharkhand's Mining & Manufacturing Sector",
+    "Organization": "Governmcnt of Jharkhand"
+  },
+  {
+    "PS Number": "SIH26042",
+    "Problem Statement Title": "Al-Powered Vernacular Pedagogy and Real-Time Translation Tool for Mother Tongue-Based Primary Education",
+    "Organization": "Governmcnt of Jharkhand"
+  },
+  {
+    "PS Number": "SIH26043",
+    "Problem Statement Title": "A digital platform to crowdsource societal challenges and facilitate collaborative problem solving through universities and industry partnerships",
+    "Organization": "Governmcnt of Jharkhand"
+  },
+  {
+    "PS Number": "SIH26046",
+    "Problem Statement Title": "AIIA Clinical Trials Dashboard - a real-time, cloud-based, GCP-compliant Clinical Trial Management System (CTMS) for Ayurveda research, with CDISC/FHIR-interoperable data, role-based KPIs, and integrated ethics, regulatory (CTRI / NDCT Rules 2019) and pharma covigilance tracking.",
+    "Organization": "Ministry of Ayush"
+  },
+  {
+    "PS Number": "SIH26047",
+    "Problem Statement Title": "Patient Case-Taking Software",
+    "Organization": "Ministry of Ayush"
+  },
+  {
+    "PS Number": "SIH26051",
+    "Problem Statement Title": "Software Based Model Development for Design of Area Specific Shelter for Thermal Comfort Maintenance.",
+    "Organization": "DRDO"
+  },
+  {
+    "PS Number": "SIH26053",
+    "Problem Statement Title": "Adaptive Variable Resolution 2.5D Lidar Mapping for Dynamic Environment Perception",
+    "Organization": "DRDO"
+  },
+  {
+    "PS Number": "SIH26054",
+    "Problem Statement Title": "AI-Enabled Real-Time Digital Twin System for Health Monitoring, Fault Prediction and Mission Reliability Enhancement of Aero Piston Engines used in MALE UAVs.",
+    "Organization": "DRDO"
+  },
+  {
+    "PS Number": "SIH26055",
+    "Problem Statement Title": "Smart Scan strategy for Electronic Warfare",
+    "Organization": "DRDO"
+  },
+  {
+    "PS Number": "SIH26056",
+    "Problem Statement Title": "Development of a Real-time Airfare Price Index for India through Automated Web Scraping of Airline and Online Travel Aggregator Portals for Augmentation of the Consumer Price Index (CPI).",
+    "Organization": "MoSPI"
+  },
+  {
+    "PS Number": "SIH26057",
+    "Problem Statement Title": "AI-Powered Automated Underwater Marine Debris and Anomaly Detection System using Side-Scan Sonar Imagery",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26059",
+    "Problem Statement Title": "AI-Enabled Antarctic Sea-Ice, Iceberg Trajectory, and Navigation Decision Support System",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26060",
+    "Problem Statement Title": "Digital Platform for efficient remote management of Indian Antarctic Research Stations",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26061",
+    "Problem Statement Title": "AI-Driven Smart Energy Management System for Polar Research Stations",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26062",
+    "Problem Statement Title": "Integrated Polar Expedition Logistics and Asset Management System",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26063",
+    "Problem Statement Title": "Integrated Polar Science Outreach, Knowledge Repository and Media Dissemination Portal",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26066",
+    "Problem Statement Title": "OceanEmbed - Satellite Embedding-Based Deep Learning Framework for Reconstruction of Subsurface Ocean Temperature from Surface Satellite Observations.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26070",
+    "Problem Statement Title": "To develop an Artificial Intelligence (AI) / Machine Learning (ML) based system for identification, classification, and prediction of different tropical cyclone patterns using multi-source satellite data.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26071",
+    "Problem Statement Title": "AI/ML-Based Integrated heavy rainfall Early Warning and Inundation Prediction System using Satellite, Radar, observational Weather and numerical weather prediction model data.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26072",
+    "Problem Statement Title": "AIML based Nowcasting of thunderstorm and lightning using atmospheric observation including multiple radars, satellite, lightning and model data.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26074",
+    "Problem Statement Title": "Downscaling of weather forecast from Block level to Panchayat level: Inferring high-resolution plots/ data/ information from low-resolution plot /data /information /variables for agro-meteorological advisory services.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26075",
+    "Problem Statement Title": "Participants are invited to design and develop \\*\\*CAPACITY CONNECT A Digital Capacity Building and Learning Management Portal\\*\\* to support organizational training, competency development, and knowledge sharing through a centralized web-based platform.",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26077",
+    "Problem Statement Title": "AI-Driven Hyper-Local Early Warning System for Severe Weather Nowcasting",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26080",
+    "Problem Statement Title": "Regime-Aware AI Post-Processing of Monsoon Rainfall Forecasts",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26083",
+    "Problem Statement Title": "Extreme Heatwave Early Warning and Human Thermal Stress Index",
+    "Organization": "Ministry of Earth Sciences (MoES)"
+  },
+  {
+    "PS Number": "SIH26090",
+    "Problem Statement Title": "AI-Driven Market Linkage and Smart Cataloging Mobile Application for Marginalized Artisans",
+    "Organization": "Ministry of Social Justice and Empowerment (MoSJE)"
+  },
+  {
+    "PS Number": "SIH26092",
+    "Problem Statement Title": "AI-Driven Scheme Matching for Marginalized Entrepreneurs",
+    "Organization": "Ministry of Social Justice and Empowerment (MoSJE)"
+  },
+  {
+    "PS Number": "SIH26095",
+    "Problem Statement Title": "Smart Real-Time Monitoring & Inspection Mobile App",
+    "Organization": "Ministry of Social Justice and Empowerment (MoSJE)"
+  },
+  {
+    "PS Number": "SIH26099",
+    "Problem Statement Title": "AI-Driven Standardization and Harmonization of Material Codes Across CPSEs",
+    "Organization": "Ministry of Petroleum & Natural Gas"
+  },
+  {
+    "PS Number": "SIH26101",
+    "Problem Statement Title": "Develop an AI enabled learning platform that identifies competency gaps, recommends personalized training through integration with the iGOT Karmayogi ecosystem, and capable of generating Quizzes and Multiple choice questions (MCQs) from uploaded learning materials to strengthen capacity building in India's Official Statistical System.",
+    "Organization": "MoSPI"
+  },
+  {
+    "PS Number": "SIH26106",
+    "Problem Statement Title": "AI-Powered Email Threat Detection, GeoLocation and Forensic Intelligence Platform",
+    "Organization": "All India Council for Technical Education (Cyber Security Cell)"
+  },
+  {
+    "PS Number": "SIH26107",
+    "Problem Statement Title": "Al-powered Intelligent Assistant for Indian Standards and BIS Services for Industries and Consumers",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26108",
+    "Problem Statement Title": "AI-Powered Recommendation Engine for Identifying Applicable Indian Standards for Procurement Specifications",
+    "Organization": "Ministry of Consumer Affairs, Food & Public Distribution"
+  },
+  {
+    "PS Number": "SIH26111",
+    "Problem Statement Title": "Smart Al-Enabled Rapid Feed and Silage Quality Testing System for Dairy Farmers",
+    "Organization": "Ministry of Fisheries, Animal Husbandry & Dairying"
+  },
+  {
+    "PS Number": "SIH26114",
+    "Problem Statement Title": "Smart City Site Planning using Autodesk Forma Site Design",
+    "Organization": "Autodesk"
+  },
+  {
+    "PS Number": "SIH26115",
+    "Problem Statement Title": "Design and Develop a Smart Mobile Medical-Waste Collection and Segregation System",
+    "Organization": "Autodesk"
+  },
+  {
+    "PS Number": "SIH26116",
+    "Problem Statement Title": "Urban Mixed-Use Design Challenge-Design a centrally located mixed-use building in Autodesk Revit with commercial spaces (Ground + 1st floor) and residential units (up to 8 floors). 1 Level of Basement (Car Parking + EV Charging), Total (B+G+9)(Note: Plot size and all required dimensions may be assumed by students (in mm units).",
+    "Organization": "Autodesk"
+  },
+  {
+    "PS Number": "SIH26120",
+    "Problem Statement Title": "Digital Twin for Well-to-Surface Optimization of Cyclic Steam Stimulation (CSS) and Sucker Rod Pump (SRP) Operations for Heavy Oil Wells of Baghewala Field.",
+    "Organization": "Oil India Limited"
+  },
+  {
+    "PS Number": "SIH26121",
+    "Problem Statement Title": "eRTMAC-NWIS (Nearby Wells Intelligence System): An AI-Powered Offset Well Knowledge and Decision Support Platform for Drilling Operations",
+    "Organization": "Oil India Limited"
+  },
+  {
+    "PS Number": "SIH26123",
+    "Problem Statement Title": "Edge-AI Based Distributed Fleet Coordination for Autonomous Mobile Robots (AMRs) in Smart Warehouses",
+    "Organization": "Bharat Electronics Limited"
+  },
+  {
+    "PS Number": "SIH26125",
+    "Problem Statement Title": "Blockchain-Based Secure Platform for Identity,Access Control, and Digital Asset Management",
+    "Organization": "Bharat Electronics Limited"
+  },
+  {
+    "PS Number": "SIH26126",
+    "Problem Statement Title": "Vision Based Autonomous Navigation for Unmanned Ground Vehicle for Outdoor environment",
+    "Organization": "Bharat Electronics Limited"
+  },
+  {
+    "PS Number": "SIH26128",
+    "Problem Statement Title": "Efficient systems for early detection,prevention,and management of livestock diseases and animal health issues",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26131",
+    "Problem Statement Title": "Early detection and management of crop diseases and pest infestations",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26132",
+    "Problem Statement Title": "Strengthening market linkages and price discovery for farmers",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26133",
+    "Problem Statement Title": "Accessibility and quality of public healthcare services,particularly in rural and underserved areas",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26134",
+    "Problem Statement Title": "Challenges in aligning skill development programs with industry requirements and emerging job market demands",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26136",
+    "Problem Statement Title": "Startup friendly public procurement mechanism that enables government departments to identify,pilot, procure,and scale innovative solutions from eligible startups",
+    "Organization": "Government Of Maharashtra"
+  },
+  {
+    "PS Number": "SIH26137",
+    "Problem Statement Title": "Quantum-Inspired Intelligent Traffic Route Optimization in Transportation Systems Using Metaheuristic Optimization",
+    "Organization": "Egreen Quanta"
+  },
+  {
+    "PS Number": "SIH26138",
+    "Problem Statement Title": "Quantum-Inspired Fuel Consumption Prediction and Green Fleet Optimization",
+    "Organization": "Egreen Quanta"
+  },
+  {
+    "PS Number": "SIH26139",
+    "Problem Statement Title": "Hybrid Quantum Machine Learning Platform for Early Disease Detection",
+    "Organization": "Egreen Quanta"
+  },
+  {
+    "PS Number": "SIH26140",
+    "Problem Statement Title": "AI-Based Interactive Quantum Algorithm Learning Platform",
+    "Organization": "Egreen Quanta"
+  },
+  {
+    "PS Number": "SIH26141",
+    "Problem Statement Title": "Quantum-Inspired Cyber Threat Detection for Digital Signature Security",
+    "Organization": "Egreen Quanta"
+  },
+  {
+    "PS Number": "SIH26142",
+    "Problem Statement Title": "Deep Learning Based Super Resolution Mapping (SRM) from Medium Resolution Satellite Imageries",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26143",
+    "Problem Statement Title": "Leveraging satellite imagery to determine Oil spills at sea along with AIS data correlations to identify vessel responsible for the spill.",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26147",
+    "Problem Statement Title": "Automated model for analysis of .IQ and .wav files along with signal parameter extraction",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26148",
+    "Problem Statement Title": "Creation of scripts/functions with new programming language to commence Computer & Network forensic analysis without triggering security solutions",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26149",
+    "Problem Statement Title": "Design and Development of an Integrated Secure Data Erasure and Advanced File Recovery Tool for Digital Forensics and Data Sanitization",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26150",
+    "Problem Statement Title": "Development of a Multi-Vendor DVR/NVR Forensic Analysis Tool for Standardized Acquisition, Recovery, and Analysis of Surveillance Evidence.",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26151",
+    "Problem Statement Title": "Dark web threat actor de-anonymization",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26162",
+    "Problem Statement Title": "AI-Based Detection and Classification of Industrial Fires and Persistent Thermal Sources Using NASA FIRMS, OSM & Satellite Data",
+    "Organization": "National Technical Research Organisation (NTRO)"
+  },
+  {
+    "PS Number": "SIH26165",
+    "Problem Statement Title": "AI/NLP Engine to Detect Serious Injury & Fatality (SIF) Precursors in OIL's Unsafe-Act/Unsafe-Condition and Near-Miss Reports",
+    "Organization": "Oil India Limited"
+  },
+  {
+    "PS Number": "SIH26166",
+    "Problem Statement Title": "Multi-modal, Sun angle and scale invariant image correspondence using Chandrayaan-2 optical images (OHRC, TMC and IIRS)",
+    "Organization": "Indian Space Research Organisation(ISRO)"
+  },
+  {
+    "PS Number": "SIH26169",
+    "Problem Statement Title": "Development of an AI-Based Virtual Camera Tracking System for Coarse Alignment of Mobile Free Space Optical Communication (FSOC) Terminals",
+    "Organization": "Indian Space Research Organisation(ISRO)"
+  },
+  {
+    "PS Number": "SIH26174",
+    "Problem Statement Title": "AI Human Activity Recognition for On-board BAS Experiments",
+    "Organization": "Indian Space Research Organisation(ISRO)"
+  },
+  {
+    "PS Number": "SIH26175",
+    "Problem Statement Title": "DepthWizard - Single-View Height Estimation and 3D Flythrough",
+    "Organization": "Indian Space Research Organisation(ISRO)"
+  },
+  {
+    "PS Number": "SIH26176",
+    "Problem Statement Title": "ORCA Marine EcOsystem Reasoning with Collaborative Agents",
+    "Organization": "Indian Space Research Organisation(ISRO)"
+  },
+  {
+    "PS Number": "SIH26182",
+    "Problem Statement Title": "Automated Attribution of Unknown Cryptocurrency Wallets to Nearest Virtual Asset Service Providers (VASPs) through Blockchain Intelligence APIs",
+    "Organization": "Ministry of Home Affairs"
+  },
+  {
+    "PS Number": "SIH26183",
+    "Problem Statement Title": "Real-Time Identification of Fraud-Linked Cryptocurrency Exchanges from Victim-Reported Suspect Wallet Addresses through Automated Blockchain Analytics",
+    "Organization": "Ministry of Home Affairs"
+  },
+  {
+    "PS Number": "SIH26186",
+    "Problem Statement Title": "AI-Based Predictive Personnel Stress and Welfare Monitoring System for Uniformed Forces",
+    "Organization": "Ministry of Home Affairs"
+  },
+  {
+    "PS Number": "SIH26191",
+    "Problem Statement Title": "Intelligent Identification of Hazard-Based Red Zones, Carrying Capacity Assessment, and Immediate Relocation Needs for Vulnerable Habitations",
+    "Organization": "Ministry of Home Affairs"
+  },
+  {
+    "PS Number": "SIH26193",
+    "Problem Statement Title": "Student Innovation-Developing solutions, keeping in mind the need to enhance the primary sector of India - Agriculture and to manage and process our agriculture produce.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26198",
+    "Problem Statement Title": "Student Innovation-Cutting-edge technology in these sectors continues to be in demand. Recent shifts in healthcare trends, growing populations also present an array of opportunities for innovation.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26199",
+    "Problem Statement Title": "Student Innovation-Technology ideas in tertiary sectors like Hospitality, Financial Services, Entertainment and Retail.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26201",
+    "Problem Statement Title": "Student Innovation-There is a need to design drones and robots that can solve some of the pressing challenges of India such as handling medical emergencies, search and rescue operations, etc.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26202",
+    "Problem Statement Title": "Student Innovation-Ideas focused on the intelligent use of resources for transforming and advancements of technology with combining the artificial intelligence to explore more various sources and get valuable insights.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26207",
+    "Problem Statement Title": "Student Innovation-Smart education,a concept that describes learning in digital age. It enables learners to learn more effectively, efficiently, flexibly and comfortably.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26209",
+    "Problem Statement Title": "Student Innovation-Space technology refers to the application of engineering principles to the design, development, manufacture, and operation of devices and systems for space travel and exploration.",
+    "Organization": "AICTE"
+  },
+  {
+    "PS Number": "SIH26227",
+    "Problem Statement Title": "Semantic Retrieval and Multi-Temporal Change Analysis of Satellite lmagery.",
+    "Organization": "Ministry of defence (MoD)"
+  }
+]

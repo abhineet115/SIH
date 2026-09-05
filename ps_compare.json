@@ -1,0 +1,65 @@
+[
+  {
+    "PS Number": "SIH26009",
+    "Problem Statement Title": "Using AI/ML and Space Technology to Identify Manganese Reserves and Overcome Production Shortfalls.",
+    "Organization": "Ministry of Steel",
+    "Category": "Software",
+    "Theme": "Space Technology"
+  },
+  {
+    "PS Number": "SIH26127",
+    "Problem Statement Title": "City-Wide AI Engine for Multi-Camera ANPR Trajectory Tracking and Urban Traffic Analytics",
+    "Organization": "Bharat Electronics Limited",
+    "Category": "Software",
+    "Theme": "Smart Automation"
+  },
+  {
+    "PS Number": "SIH26137",
+    "Problem Statement Title": "Quantum-Inspired Intelligent Traffic Route Optimization in Transportation Systems Using Metaheuristic Optimization",
+    "Organization": "Egreen Quanta",
+    "Category": "Software",
+    "Theme": "Transportation & Logistics"
+  },
+  {
+    "PS Number": "SIH26142",
+    "Problem Statement Title": "Deep Learning Based Super Resolution Mapping (SRM) from Medium Resolution Satellite Imageries",
+    "Organization": "National Technical Research Organisation (NTRO)",
+    "Category": "Software",
+    "Theme": "Space Technology"
+  },
+  {
+    "PS Number": "SIH26146",
+    "Problem Statement Title": "AI-Powered Monitoring & Analysis of Bitcoin Transaction Traffic",
+    "Organization": "National Technical Research Organisation (NTRO)",
+    "Category": "Software",
+    "Theme": "Blockchain & Cybersecurity"
+  },
+  {
+    "PS Number": "SIH26156",
+    "Problem Statement Title": "Universal Log Pre-processing Framework",
+    "Organization": "National Technical Research Organisation (NTRO)",
+    "Category": "Software",
+    "Theme": "Blockchain & Cybersecurity"
+  },
+  {
+    "PS Number": "SIH26158",
+    "Problem Statement Title": "Single-Pass Drone Video to Accurate 3D Model Generation System",
+    "Organization": "National Technical Research Organisation (NTRO)",
+    "Category": "Software",
+    "Theme": "Robotics and Drones"
+  },
+  {
+    "PS Number": "SIH26165",
+    "Problem Statement Title": "AI/NLP Engine to Detect Serious Injury & Fatality (SIF) Precursors in OIL's Unsafe-Act/Unsafe-Condition and Near-Miss Reports",
+    "Organization": "Oil India Limited",
+    "Category": "Software",
+    "Theme": "Smart Automation"
+  },
+  {
+    "PS Number": "SIH26167",
+    "Problem Statement Title": "SatQuery AI - An Interactive Vision-Language Assistant for Multimodal Remote Sensing Image Analysis through Text Queries",
+    "Organization": "Indian Space Research Organisation(ISRO)",
+    "Category": "Software",
+    "Theme": "Space Technology"
+  }
+]
