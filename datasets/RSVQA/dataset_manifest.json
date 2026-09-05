@@ -1,0 +1,10 @@
+{
+  "description": "Remote Sensing Visual Question Answering (LR and HR Sentinel/Aerial)",
+  "zenodo_link": "https://zenodo.org/record/6344334",
+  "github": "https://github.com/SylvainLobry/RSVQAxBEN",
+  "task_types": [
+    "Presence VQA",
+    "Count VQA",
+    "Area Comparison"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "description": "Large-Scale Sentinel-1 (SAR) & Sentinel-2 (Optical) Multi-Modal Benchmark",
+  "official_portal": "https://bigearth.net/",
+  "huggingface_repo": "https://huggingface.co/datasets/torchgeo/bigearthnet",
+  "task_types": [
+    "Optical-SAR Cross-Modal Fusion",
+    "Land-Cover Classification"
+  ]
+}

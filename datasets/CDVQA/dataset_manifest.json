@@ -1,0 +1,10 @@
+{
+  "description": "Change Detection Visual Question Answering (Bi-temporal pairs)",
+  "huggingface_repo": "https://huggingface.co/datasets/Chen-Yang/CDVQA",
+  "github": "https://github.com/Chen-Yang/CDVQA",
+  "task_types": [
+    "Bi-Temporal Change",
+    "Change VQA",
+    "Urban Delta"
+  ]
+}

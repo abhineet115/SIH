@@ -1,0 +1,1 @@
+{"id": "cdvqa_001", "image_t1": "delhi_optical_2022.tif", "image_t2": "delhi_optical_2024.tif", "conversations": [{"from": "human", "value": "<image>\nDid the built-up area expand between T1 and T2?"}, {"from": "gpt", "value": "Yes. Built-up impervious surface increased by +18.7% (approx 6.97 sq km) in the eastern sector, accompanied by a new arterial highway."}]}

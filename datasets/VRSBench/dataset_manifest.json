@@ -1,0 +1,10 @@
+{
+  "description": "Visual Remote Sensing Benchmark for VQA, Captioning & Grounding",
+  "huggingface_repo": "https://huggingface.co/datasets/Zhanqiu/VRSBench",
+  "github": "https://github.com/Zhanqiu/VRSBench",
+  "task_types": [
+    "Single VQA",
+    "Scene Captioning",
+    "Object Grounding"
+  ]
+}
