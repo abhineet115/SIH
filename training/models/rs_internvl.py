@@ -15,11 +15,17 @@ VRAM at bs=2 (T4 15GB): ~14 GB
 import torch
 import torch.nn as nn
 from typing import Optional, Dict, Any, List
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, PreTrainedModel
 from peft import get_peft_model, LoraConfig, TaskType, PeftModel
 from .s1_encoder import S1ViTEncoder
 from .s2_encoder import S2ViTEncoder
 from .projection_head import ProjectionHead
+
+# Compatibility patch for remote-code models in modern transformers (v4.49+ / v5.x)
+if not hasattr(PreTrainedModel, "all_tied_weights_keys"):
+    PreTrainedModel.all_tied_weights_keys = {}
+if not hasattr(nn.Module, "all_tied_weights_keys"):
+    nn.Module.all_tied_weights_keys = {}
 
 
 class RSInternVL(nn.Module):
