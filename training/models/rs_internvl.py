@@ -12,6 +12,7 @@ Trainable params: ~5.8M / 1.1B total
 VRAM at bs=2 (T4 15GB): ~14 GB
 """
 
+import os
 import torch
 import torch.nn as nn
 from typing import Optional, Dict, Any, List
@@ -47,7 +48,7 @@ class RSInternVL(nn.Module):
     """
 
     # InternVL3-1B hidden dimension
-    LLM_EMBED_DIM = 2048
+    LLM_EMBED_DIM = 896
     # BEN-pretrained ViT output dimension
     VIT_EMBED_DIM = 768
 
@@ -85,7 +86,7 @@ class RSInternVL(nn.Module):
                 use_4bit = False
 
         try:
-            self.llm = AutoModel.from_pretrained(
+            raw_model = AutoModel.from_pretrained(
                 base_model_name,
                 device_map=device_map,
                 trust_remote_code=True,
@@ -94,18 +95,30 @@ class RSInternVL(nn.Module):
             )
         except Exception as e:
             print(f"[RSInternVL] Notice: AutoModel fallback: {e}")
-            self.llm = AutoModelForCausalLM.from_pretrained(
+            raw_model = AutoModelForCausalLM.from_pretrained(
                 base_model_name,
                 device_map=device_map,
                 trust_remote_code=True,
                 torch_dtype=torch.float16,
             )
 
+        # Extract underlying Causal Language Model (Qwen2 / InternLM)
+        if hasattr(raw_model, "language_model"):
+            base_lm = raw_model.language_model
+            # Free unused vision model to conserve VRAM
+            if hasattr(raw_model, "vision_model"):
+                del raw_model.vision_model
+            if hasattr(raw_model, "mlp1"):
+                del raw_model.mlp1
+            torch.cuda.empty_cache()
+        else:
+            base_lm = raw_model
+
         # Dynamically determine LLM token embedding dimension (896 for InternVL3-1B)
         try:
-            self.llm_embed_dim = self.llm.get_input_embeddings().embedding_dim
+            self.llm_embed_dim = base_lm.get_input_embeddings().embedding_dim
         except Exception:
-            self.llm_embed_dim = getattr(self.llm.config, "hidden_size", 896)
+            self.llm_embed_dim = getattr(base_lm.config, "hidden_size", 896)
         print(f"[RSInternVL] Detected LLM embedding dimension: {self.llm_embed_dim}")
 
         # ── 2. Load frozen S1 ViT encoder ──────────────────────────────
@@ -130,7 +143,7 @@ class RSInternVL(nn.Module):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # ── 5. Wrap LLM with LoRA adapters ─────────────────────────────
+        # ── 5. Wrap CausalLM with LoRA adapters ────────────────────────
         lora_config = LoraConfig(
             r=lora_r,
             lora_alpha=lora_alpha,
@@ -139,7 +152,7 @@ class RSInternVL(nn.Module):
             bias="none",
             task_type=TaskType.CAUSAL_LM,
         )
-        self.llm = get_peft_model(self.llm, lora_config)
+        self.llm = get_peft_model(base_lm, lora_config)
         self.llm.print_trainable_parameters()
 
         # Enable gradient checkpointing for memory efficiency
@@ -217,6 +230,7 @@ class RSInternVL(nn.Module):
         s2_pixels: Optional[torch.Tensor] = None,
         s1_pixels_t2: Optional[torch.Tensor] = None,   # for change detection
         s2_pixels_t2: Optional[torch.Tensor] = None,   # for change detection
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Forward pass. For change detection, T1 and T2 sensor tokens are
@@ -267,8 +281,8 @@ class RSInternVL(nn.Module):
     @torch.inference_mode()
     def generate(
         self,
-        s2_pixels: Optional[torch.Tensor],
-        query: str,
+        s2_pixels: Optional[torch.Tensor] = None,
+        query: str = "",
         s1_pixels: Optional[torch.Tensor] = None,
         s2_pixels_t2: Optional[torch.Tensor] = None,
         s1_pixels_t2: Optional[torch.Tensor] = None,
@@ -276,36 +290,31 @@ class RSInternVL(nn.Module):
         temperature: float = 0.1,
     ) -> str:
         """Single-sample inference — returns generated text answer."""
+        dev = next(self.llm.parameters()).device
         inputs = self.tokenizer(
             query, return_tensors="pt", padding=True
-        ).to(self.llm.device)
+        ).to(dev)
 
-        output = self.forward(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            s1_pixels=s1_pixels,
-            s2_pixels=s2_pixels,
-            s1_pixels_t2=s1_pixels_t2,
-            s2_pixels_t2=s2_pixels_t2,
-        )
-
-        # Re-run for generation (greedy / low-temp sampling)
-        sensor_tokens = self.encode_sensors(s1_pixels, s2_pixels)
-        t2_tokens = self.encode_sensors(s1_pixels_t2, s2_pixels_t2)
         word_embeds = self.llm.get_input_embeddings()(inputs["input_ids"])
+        dt = word_embeds.dtype
+
+        # Encode sensor images
+        sensor_tokens = self.encode_sensors(s1_pixels, s2_pixels, device=dev, dtype=dt)
+        t2_tokens = self.encode_sensors(s1_pixels_t2, s2_pixels_t2, device=dev, dtype=dt)
 
         parts = []
         if sensor_tokens is not None:
-            parts.append(sensor_tokens.to(word_embeds.dtype))
+            parts.append(sensor_tokens.to(dt))
         if t2_tokens is not None:
-            parts.append(t2_tokens.to(word_embeds.dtype))
+            parts.append(t2_tokens.to(dt))
         parts.append(word_embeds)
         inputs_embeds = torch.cat(parts, dim=1)
 
         n_vis = inputs_embeds.shape[1] - inputs["attention_mask"].shape[1]
         if n_vis > 0:
             vis_mask = torch.ones(
-                1, n_vis, dtype=torch.long, device=inputs["attention_mask"].device
+                inputs["attention_mask"].shape[0], n_vis,
+                dtype=inputs["attention_mask"].dtype, device=dev
             )
             attention_mask = torch.cat([vis_mask, inputs["attention_mask"]], dim=1)
         else:
@@ -324,11 +333,12 @@ class RSInternVL(nn.Module):
 
     def save_adapter(self, path: str):
         """Save only the trainable LoRA adapter + projection heads."""
+        os.makedirs(path, exist_ok=True)
         self.llm.save_pretrained(path)
         torch.save({
             "s1_proj": self.s1_proj.state_dict(),
             "s2_proj": self.s2_proj.state_dict(),
-        }, f"{path}/projection_heads.pt")
+        }, os.path.join(path, "projection_heads.pt"))
         self.tokenizer.save_pretrained(path)
         print(f"[RSInternVL] Adapter saved → {path}")
 
@@ -339,18 +349,34 @@ class RSInternVL(nn.Module):
         adapter_path: str,
         use_4bit: bool = True,
         device_map: str = "auto",
+        task_mode: str = "vqa",
     ) -> "RSInternVL":
         """Load base model + previously saved adapter checkpoint."""
         model = cls(
             base_model_name=base_model_name,
             use_4bit=use_4bit,
             device_map=device_map,
+            task_mode=task_mode,
         )
-        model.llm = PeftModel.from_pretrained(model.llm, adapter_path)
+        
+        # Load adapter weights into the model
+        if hasattr(model.llm, "load_adapter"):
+            try:
+                model.llm.load_adapter(adapter_path, adapter_name="default", is_trainable=True)
+            except Exception:
+                base = model.llm.get_base_model() if hasattr(model.llm, "get_base_model") else model.llm
+                model.llm = PeftModel.from_pretrained(base, adapter_path, is_trainable=True)
+        else:
+            base = model.llm.get_base_model() if hasattr(model.llm, "get_base_model") else model.llm
+            model.llm = PeftModel.from_pretrained(base, adapter_path, is_trainable=True)
 
-        proj_state = torch.load(f"{adapter_path}/projection_heads.pt", map_location="cpu")
-        model.s1_proj.load_state_dict(proj_state["s1_proj"])
-        model.s2_proj.load_state_dict(proj_state["s2_proj"])
+        proj_path = os.path.join(adapter_path, "projection_heads.pt")
+        if os.path.exists(proj_path):
+            proj_state = torch.load(proj_path, map_location="cpu")
+            if "s1_proj" in proj_state:
+                model.s1_proj.load_state_dict(proj_state["s1_proj"])
+            if "s2_proj" in proj_state:
+                model.s2_proj.load_state_dict(proj_state["s2_proj"])
 
         print(f"[RSInternVL] Loaded adapter from {adapter_path}")
         return model

@@ -38,13 +38,24 @@ def export_model(
     print(f"[Export] Loading base model: {base_model}")
     if merge_lora:
         # Load in fp16 (not 4-bit) for merging — needs ~3GB RAM
-        from transformers import AutoModelForCausalLM
-        base = AutoModelForCausalLM.from_pretrained(
-            base_model,
-            torch_dtype=torch.float16,
-            device_map="cpu",   # merge on CPU to avoid VRAM issues
-            trust_remote_code=True,
-        )
+        from transformers import AutoModel, AutoModelForCausalLM
+        try:
+            raw = AutoModel.from_pretrained(
+                base_model,
+                torch_dtype=torch.float16,
+                device_map="cpu",   # merge on CPU to avoid VRAM issues
+                trust_remote_code=True,
+            )
+            base = raw.language_model if hasattr(raw, "language_model") else raw
+        except Exception:
+            base = AutoModelForCausalLM.from_pretrained(
+                base_model,
+                torch_dtype=torch.float16,
+                device_map="cpu",
+                trust_remote_code=True,
+            )
+            if hasattr(base, "language_model"):
+                base = base.language_model
 
         print(f"[Export] Loading LoRA adapter: {adapter_path}")
         model = PeftModel.from_pretrained(base, adapter_path)
