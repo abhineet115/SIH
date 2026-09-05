@@ -86,24 +86,21 @@ class RSInternVL(nn.Module):
                 use_4bit = False
 
         try:
-            self.llm = AutoModelForCausalLM.from_pretrained(
+            self.llm = AutoModel.from_pretrained(
                 base_model_name,
-                quantization_config=bnb_config,
                 device_map=device_map,
                 trust_remote_code=True,
-                torch_dtype=torch.float16 if not use_4bit else None,
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
             )
         except Exception as e:
-            if bnb_config is not None:
-                print(f"[RSInternVL] 4-bit load failed ({e}), retrying in FP16...")
-                self.llm = AutoModelForCausalLM.from_pretrained(
-                    base_model_name,
-                    device_map=device_map,
-                    trust_remote_code=True,
-                    torch_dtype=torch.float16,
-                )
-            else:
-                raise e
+            print(f"[RSInternVL] Notice: AutoModel fallback: {e}")
+            self.llm = AutoModelForCausalLM.from_pretrained(
+                base_model_name,
+                device_map=device_map,
+                trust_remote_code=True,
+                torch_dtype=torch.float16,
+            )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             base_model_name,
