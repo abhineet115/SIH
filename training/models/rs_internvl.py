@@ -144,16 +144,23 @@ class RSInternVL(nn.Module):
         self.warnings_issued = {}
         print(f"[RSInternVL] Ready. Task mode: {task_mode}")
 
-    def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs=None):
+    def gradient_checkpointing_enable(self, *args, **kwargs):
         if hasattr(self.llm, "gradient_checkpointing_enable"):
             try:
-                self.llm.gradient_checkpointing_enable(gradient_checkpointing_kwargs=gradient_checkpointing_kwargs)
+                self.llm.gradient_checkpointing_enable(*args, **kwargs)
             except TypeError:
-                self.llm.gradient_checkpointing_enable()
+                try:
+                    gc_kwargs = kwargs.get("gradient_checkpointing_kwargs", None)
+                    self.llm.gradient_checkpointing_enable(gradient_checkpointing_kwargs=gc_kwargs)
+                except TypeError:
+                    self.llm.gradient_checkpointing_enable()
 
-    def gradient_checkpointing_disable(self):
+    def gradient_checkpointing_disable(self, *args, **kwargs):
         if hasattr(self.llm, "gradient_checkpointing_disable"):
-            self.llm.gradient_checkpointing_disable()
+            try:
+                self.llm.gradient_checkpointing_disable(*args, **kwargs)
+            except TypeError:
+                self.llm.gradient_checkpointing_disable()
 
     def can_generate(self) -> bool:
         return True
