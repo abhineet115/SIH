@@ -136,9 +136,27 @@ class RSInternVL(nn.Module):
         self.llm.print_trainable_parameters()
 
         # Enable gradient checkpointing for memory efficiency
-        self.llm.gradient_checkpointing_enable()
+        try:
+            self.llm.gradient_checkpointing_enable()
+        except Exception:
+            pass
 
+        self.warnings_issued = {}
         print(f"[RSInternVL] Ready. Task mode: {task_mode}")
+
+    def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs=None):
+        if hasattr(self.llm, "gradient_checkpointing_enable"):
+            try:
+                self.llm.gradient_checkpointing_enable(gradient_checkpointing_kwargs=gradient_checkpointing_kwargs)
+            except TypeError:
+                self.llm.gradient_checkpointing_enable()
+
+    def gradient_checkpointing_disable(self):
+        if hasattr(self.llm, "gradient_checkpointing_disable"):
+            self.llm.gradient_checkpointing_disable()
+
+    def can_generate(self) -> bool:
+        return True
 
     def encode_sensors(
         self,
