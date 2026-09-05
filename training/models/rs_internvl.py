@@ -67,21 +67,7 @@ class RSInternVL(nn.Module):
         self.task_mode = task_mode
         self.llm_embed_dim = self.LLM_EMBED_DIM
 
-        # ── 1. Load frozen S1 ViT encoder ──────────────────────────────
-        print("[RSInternVL] Loading S1 ViT encoder (frozen)...")
-        self.s1_encoder = S1ViTEncoder(s1_encoder_name)
-        self.s1_encoder.freeze()
-
-        # ── 2. Load frozen S2 ViT encoder ──────────────────────────────
-        print("[RSInternVL] Loading S2 ViT encoder (frozen)...")
-        self.s2_encoder = S2ViTEncoder(s2_encoder_name)
-        self.s2_encoder.freeze()
-
-        # ── 3. Trainable projection heads ──────────────────────────────
-        self.s1_proj = ProjectionHead(self.VIT_EMBED_DIM, self.LLM_EMBED_DIM)
-        self.s2_proj = ProjectionHead(self.VIT_EMBED_DIM, self.LLM_EMBED_DIM)
-
-        # ── 4. Load InternVL3-1B backbone with 4-bit quantization ──────
+        # ── 1. Load InternVL3-1B backbone ──────────────────────────────
         print("[RSInternVL] Loading InternVL3-1B...")
         bnb_config = None
         if use_4bit:
@@ -114,6 +100,27 @@ class RSInternVL(nn.Module):
                 trust_remote_code=True,
                 torch_dtype=torch.float16,
             )
+
+        # Dynamically determine LLM token embedding dimension (896 for InternVL3-1B)
+        try:
+            self.llm_embed_dim = self.llm.get_input_embeddings().embedding_dim
+        except Exception:
+            self.llm_embed_dim = getattr(self.llm.config, "hidden_size", 896)
+        print(f"[RSInternVL] Detected LLM embedding dimension: {self.llm_embed_dim}")
+
+        # ── 2. Load frozen S1 ViT encoder ──────────────────────────────
+        print("[RSInternVL] Loading S1 ViT encoder (frozen)...")
+        self.s1_encoder = S1ViTEncoder(s1_encoder_name)
+        self.s1_encoder.freeze()
+
+        # ── 3. Load frozen S2 ViT encoder ──────────────────────────────
+        print("[RSInternVL] Loading S2 ViT encoder (frozen)...")
+        self.s2_encoder = S2ViTEncoder(s2_encoder_name)
+        self.s2_encoder.freeze()
+
+        # ── 4. Trainable projection heads (ViT -> LLM space) ───────────
+        self.s1_proj = ProjectionHead(self.VIT_EMBED_DIM, self.llm_embed_dim)
+        self.s2_proj = ProjectionHead(self.VIT_EMBED_DIM, self.llm_embed_dim)
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             base_model_name,
@@ -169,6 +176,8 @@ class RSInternVL(nn.Module):
         self,
         s1_pixels: Optional[torch.Tensor],   # (B, 2, H, W)  — SAR VV/VH
         s2_pixels: Optional[torch.Tensor],   # (B, 10, H, W) — S2 10m+20m bands
+        device: Optional[torch.device] = None,
+        dtype: Optional[torch.dtype] = None,
     ) -> Optional[torch.Tensor]:
         """
         Encode S1 and/or S2 imagery into LLM embedding space tokens.
@@ -177,19 +186,27 @@ class RSInternVL(nn.Module):
         tokens = []
 
         if s1_pixels is not None:
-            s1_feats = self.s1_encoder(s1_pixels)       # (B, N, 768)
-            s1_tokens = self.s1_proj(s1_feats)           # (B, N, 2048)
+            if device is not None:
+                s1_pixels = s1_pixels.to(device=device, dtype=dtype)
+                self.s1_encoder = self.s1_encoder.to(device=device)
+                self.s1_proj = self.s1_proj.to(device=device)
+            s1_feats = self.s1_encoder(s1_pixels)
+            s1_tokens = self.s1_proj(s1_feats)
             tokens.append(s1_tokens)
 
         if s2_pixels is not None:
-            s2_feats = self.s2_encoder(s2_pixels)       # (B, N, 768)
-            s2_tokens = self.s2_proj(s2_feats)           # (B, N, 2048)
+            if device is not None:
+                s2_pixels = s2_pixels.to(device=device, dtype=dtype)
+                self.s2_encoder = self.s2_encoder.to(device=device)
+                self.s2_proj = self.s2_proj.to(device=device)
+            s2_feats = self.s2_encoder(s2_pixels)
+            s2_tokens = self.s2_proj(s2_feats)
             tokens.append(s2_tokens)
 
         if not tokens:
             return None
 
-        return torch.cat(tokens, dim=1)  # (B, N_s1+N_s2, 2048)
+        return torch.cat(tokens, dim=1)
 
     def forward(
         self,
@@ -207,17 +224,19 @@ class RSInternVL(nn.Module):
         """
         # Get text embeddings from LLM embedding layer
         word_embeds = self.llm.get_input_embeddings()(input_ids)  # (B, L, D)
+        dev = word_embeds.device
+        dt = word_embeds.dtype
 
         # Encode sensor images
-        t1_tokens = self.encode_sensors(s1_pixels, s2_pixels)
-        t2_tokens = self.encode_sensors(s1_pixels_t2, s2_pixels_t2)
+        t1_tokens = self.encode_sensors(s1_pixels, s2_pixels, device=dev, dtype=dt)
+        t2_tokens = self.encode_sensors(s1_pixels_t2, s2_pixels_t2, device=dev, dtype=dt)
 
         # Prepend sensor tokens to text embeddings
         parts = []
         if t1_tokens is not None:
-            parts.append(t1_tokens.to(word_embeds.dtype))
+            parts.append(t1_tokens.to(dt))
         if t2_tokens is not None:
-            parts.append(t2_tokens.to(word_embeds.dtype))
+            parts.append(t2_tokens.to(dt))
         parts.append(word_embeds)
 
         inputs_embeds = torch.cat(parts, dim=1)  # (B, N_visual + L, D)
