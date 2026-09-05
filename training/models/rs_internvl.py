@@ -27,6 +27,13 @@ if not hasattr(PreTrainedModel, "all_tied_weights_keys"):
 if not hasattr(nn.Module, "all_tied_weights_keys"):
     nn.Module.all_tied_weights_keys = {}
 
+# Disable incompatible pre-installed torchao in peft
+try:
+    import peft.import_utils
+    peft.import_utils.is_torchao_available = lambda: False
+except Exception:
+    pass
+
 
 class RSInternVL(nn.Module):
     """
