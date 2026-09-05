@@ -179,8 +179,6 @@ class BENBenchDataset(Dataset):
                 "input_ids": encoding["input_ids"].squeeze(),
                 "attention_mask": encoding["attention_mask"].squeeze(),
                 "labels": labels,
-                "task_type": self.task_type,
-                "sample_id": sample.get("id", idx),
             }
         else:
             # Inference mode

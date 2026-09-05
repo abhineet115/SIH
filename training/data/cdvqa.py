@@ -95,7 +95,6 @@ class CDVQADataset(Dataset):
                 "input_ids": enc["input_ids"].squeeze(),
                 "attention_mask": enc["attention_mask"].squeeze(),
                 "labels": labels,
-                "task_type": "change_vqa",
             }
 
         return {
