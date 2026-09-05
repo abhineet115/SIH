@@ -282,32 +282,35 @@ def train_round(
     # Check if this round already has a partial checkpoint (crash recovery)
     resume_ckpt = find_latest_checkpoint(output_dir)
 
-    training_args = TrainingArguments(
-        output_dir=output_dir,
-        max_steps=cfg["max_steps"],
-        per_device_train_batch_size=cfg["batch_size"],
-        per_device_eval_batch_size=cfg["batch_size"],
-        gradient_accumulation_steps=cfg["grad_accum"],
-        learning_rate=cfg["lr"],
-        lr_scheduler_type="cosine",
-        warmup_ratio=cfg["warmup_ratio"],
-        optim="paged_adamw_8bit",        # 8-bit optimizer — saves memory
-        fp16=True,                        # T4 native precision
-        bf16=False,
-        gradient_checkpointing=True,
-        save_steps=cfg["save_steps"],
-        save_total_limit=3,              # keep last 3 checkpoints
-        eval_steps=cfg["save_steps"],
-        evaluation_strategy="steps",
-        logging_steps=10,
-        report_to="tensorboard",
-        load_best_model_at_end=cfg.get("load_best_model", False),
-        metric_for_best_model="eval_loss",
-        dataloader_num_workers=2,
-        remove_unused_columns=False,
-        resume_from_checkpoint=resume_ckpt,  # auto-resume!
-        run_name=round_name,
-    )
+    warmup_steps = max(1, int(cfg["max_steps"] * cfg.get("warmup_ratio", 0.05)))
+    eval_arg = "eval_strategy" if "eval_strategy" in TrainingArguments.__init__.__code__.co_varnames else "evaluation_strategy"
+
+    args_dict = {
+        "output_dir": output_dir,
+        "max_steps": cfg["max_steps"],
+        "per_device_train_batch_size": cfg["batch_size"],
+        "per_device_eval_batch_size": cfg["batch_size"],
+        "gradient_accumulation_steps": cfg["grad_accum"],
+        "learning_rate": cfg["lr"],
+        "lr_scheduler_type": "cosine",
+        "warmup_steps": warmup_steps,
+        "optim": "paged_adamw_8bit",        # 8-bit optimizer — saves memory
+        "fp16": True,                        # T4 native precision
+        "bf16": False,
+        "gradient_checkpointing": True,
+        "save_steps": cfg["save_steps"],
+        "save_total_limit": 3,              # keep last 3 checkpoints
+        "eval_steps": cfg["save_steps"],
+        eval_arg: "steps",
+        "logging_steps": 10,
+        "report_to": "tensorboard",
+        "load_best_model_at_end": cfg.get("load_best_model", False),
+        "metric_for_best_model": "eval_loss",
+        "dataloader_num_workers": 2,
+        "remove_unused_columns": False,
+        "run_name": round_name,
+    }
+    training_args = TrainingArguments(**args_dict)
 
     # ── Trainer ───────────────────────────────────────────────────────────────
     trainer = Trainer(
