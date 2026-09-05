@@ -7,10 +7,12 @@ import { ResultCard } from "./components/ResultCard";
 import { ConfidenceBadge } from "./components/ConfidenceBadge";
 import { ExecutionTraceView } from "./components/ExecutionTraceView";
 import { ReportModal } from "./components/ReportModal";
+import { useToast } from "./components/Toast";
 import type { SampleScenario, RasterMetadata, AnalysisResult } from "./types";
 import { fetchSampleScenarios, runAgenticQuery } from "./services/api";
 
 export function App() {
+  const { addToast } = useToast();
   const [scenarios, setScenarios] = useState<SampleScenario[]>([]);
   const [currentScenario, setCurrentScenario] = useState<SampleScenario | null>(null);
 
@@ -72,7 +74,7 @@ export function App() {
     const activeS = sPath !== undefined ? sPath : secondaryPath;
 
     if (!activeP) {
-      alert("Please upload or select a primary satellite image first.");
+      addToast("Please upload or select a primary satellite image first.", "info");
       return;
     }
 
@@ -83,7 +85,7 @@ export function App() {
       setBackendOnline(true);
     } catch (err: any) {
       console.error("Query execution error:", err);
-      alert(`Query failed: ${err.message}`);
+      addToast(`Query failed: ${err.message}`, "error", 6000);
     } finally {
       setIsLoading(false);
     }
@@ -93,12 +95,14 @@ export function App() {
     setPrimaryMeta(meta);
     setPrimaryPath(path);
     setPrimaryPreview(meta.preview_b64 || null);
+    addToast(`✓ ${meta.filename} loaded — ${meta.bands} bands, ${meta.width}×${meta.height} @ ${meta.gsd_meters}m GSD`, "success");
   };
 
   const handleSecondaryUploaded = (meta: RasterMetadata, path: string) => {
     setSecondaryMeta(meta);
     setSecondaryPath(path);
     setSecondaryPreview(meta.preview_b64 || null);
+    addToast(`✓ Secondary raster loaded — ${meta.filename}`, "success");
   };
 
   const handleClearSecondary = () => {
