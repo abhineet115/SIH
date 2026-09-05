@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict
 
 import torch
+import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader
 from transformers import (
@@ -22,10 +23,17 @@ from transformers import (
     Trainer,
     AutoTokenizer,
     BitsAndBytesConfig,
+    PreTrainedModel,
     get_cosine_schedule_with_warmup,
 )
 from peft import LoraConfig, get_peft_model
 from accelerate import Accelerator
+
+# Compatibility patch for remote-code models in modern transformers (v4.49+ / v5.x)
+if not hasattr(PreTrainedModel, "all_tied_weights_keys"):
+    PreTrainedModel.all_tied_weights_keys = {}
+if not hasattr(nn.Module, "all_tied_weights_keys"):
+    nn.Module.all_tied_weights_keys = {}
 
 
 # ── Round Configurations ──────────────────────────────────────────────────────
