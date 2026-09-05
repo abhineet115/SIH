@@ -69,23 +69,41 @@ class RSInternVL(nn.Module):
         self.s2_proj = ProjectionHead(self.VIT_EMBED_DIM, self.LLM_EMBED_DIM)
 
         # ── 4. Load InternVL3-1B backbone with 4-bit quantization ──────
-        print("[RSInternVL] Loading InternVL3-1B (4-bit QLoRA)...")
+        print("[RSInternVL] Loading InternVL3-1B...")
         bnb_config = None
         if use_4bit:
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-            )
+            try:
+                import bitsandbytes
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                )
+            except Exception as e:
+                print(f"[RSInternVL] Notice: 4-bit bnb not ready ({e}), falling back to native FP16 (~2GB VRAM)...")
+                bnb_config = None
+                use_4bit = False
 
-        self.llm = AutoModelForCausalLM.from_pretrained(
-            base_model_name,
-            quantization_config=bnb_config,
-            device_map=device_map,
-            trust_remote_code=True,
-            torch_dtype=torch.float16 if not use_4bit else None,
-        )
+        try:
+            self.llm = AutoModelForCausalLM.from_pretrained(
+                base_model_name,
+                quantization_config=bnb_config,
+                device_map=device_map,
+                trust_remote_code=True,
+                torch_dtype=torch.float16 if not use_4bit else None,
+            )
+        except Exception as e:
+            if bnb_config is not None:
+                print(f"[RSInternVL] 4-bit load failed ({e}), retrying in FP16...")
+                self.llm = AutoModelForCausalLM.from_pretrained(
+                    base_model_name,
+                    device_map=device_map,
+                    trust_remote_code=True,
+                    torch_dtype=torch.float16,
+                )
+            else:
+                raise e
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             base_model_name,
