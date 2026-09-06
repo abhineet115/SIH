@@ -297,6 +297,15 @@ def train_round(
     warmup_steps = max(1, int(cfg["max_steps"] * cfg.get("warmup_ratio", 0.05)))
     eval_arg = "eval_strategy" if "eval_strategy" in TrainingArguments.__init__.__code__.co_varnames else "evaluation_strategy"
 
+    has_bnb = False
+    try:
+        import bitsandbytes
+        has_bnb = True
+    except Exception:
+        has_bnb = False
+
+    optim_name = "paged_adamw_8bit" if has_bnb else "adamw_torch"
+
     args_dict = {
         "output_dir": output_dir,
         "max_steps": cfg["max_steps"],
@@ -306,7 +315,7 @@ def train_round(
         "learning_rate": cfg["lr"],
         "lr_scheduler_type": "cosine",
         "warmup_steps": warmup_steps,
-        "optim": "paged_adamw_8bit",        # 8-bit optimizer — saves memory
+        "optim": optim_name,                # 8-bit optimizer if bnb is present, else standard AdamW
         "fp16": True,                        # T4 native precision
         "bf16": False,
         "gradient_checkpointing": True,
