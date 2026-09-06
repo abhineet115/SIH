@@ -85,17 +85,46 @@ class BENBenchDataset(Dataset):
         return len(self.samples)
 
     def _load_s2(self, path: str) -> torch.Tensor:
-        """Load 10-band S2 image and normalize."""
-        try:
-            import rasterio
-            with rasterio.open(path) as src:
-                img = src.read()[:10]   # first 10 bands
-        except ImportError:
-            # Fallback: load as numpy (for Colab where rasterio may not be present)
-            img = np.load(path.replace(".tif", ".npy")) if path.endswith(".tif") else \
-                  np.array(Image.open(path)).transpose(2, 0, 1)[:10]
+        """Load 10-band S2 image (.npy, .tif, or image) and normalize."""
+        img = None
+        if path and os.path.exists(path):
+            try:
+                if path.endswith(".npy"):
+                    img = np.load(path)
+                elif path.endswith(".tif") or path.endswith(".tiff") or path.endswith(".jp2"):
+                    try:
+                        import rasterio
+                        with rasterio.open(path) as src:
+                            img = src.read()[:10]
+                    except Exception:
+                        pass
+                else:
+                    arr = np.array(Image.open(path))
+                    if arr.ndim == 2:
+                        img = np.stack([arr] * 10, axis=0)
+                    elif arr.ndim == 3:
+                        arr = arr.transpose(2, 0, 1)
+                        img = np.zeros((10, arr.shape[1], arr.shape[2]), dtype=np.float32)
+                        img[:min(10, arr.shape[0])] = arr[:min(10, arr.shape[0])]
+                        for c in range(arr.shape[0], 10):
+                            img[c] = arr[0]
+            except Exception:
+                img = None
 
-        if img.shape[1] != self.image_size:
+        if img is None:
+            img = np.zeros((10, self.image_size, self.image_size), dtype=np.float32)
+
+        if img.ndim == 2:
+            img = np.stack([img] * 10, axis=0)
+        elif img.ndim == 3 and img.shape[0] != 10:
+            if img.shape[2] == 10:
+                img = img.transpose(2, 0, 1)
+            else:
+                new_img = np.zeros((10, img.shape[1], img.shape[2]), dtype=img.dtype)
+                new_img[:min(10, img.shape[0])] = img[:min(10, img.shape[0])]
+                img = new_img
+
+        if img.shape[1] != self.image_size or img.shape[2] != self.image_size:
             img = torch.nn.functional.interpolate(
                 torch.from_numpy(img).unsqueeze(0).float(),
                 size=(self.image_size, self.image_size),
@@ -106,14 +135,43 @@ class BENBenchDataset(Dataset):
 
     def _load_s1(self, path: str) -> torch.Tensor:
         """Load 2-band S1 image (VV, VH) and normalize."""
-        try:
-            import rasterio
-            with rasterio.open(path) as src:
-                img = src.read()[:2]
-        except Exception:
+        img = None
+        if path and os.path.exists(path):
+            try:
+                if path.endswith(".npy"):
+                    img = np.load(path)
+                elif path.endswith(".tif") or path.endswith(".tiff"):
+                    try:
+                        import rasterio
+                        with rasterio.open(path) as src:
+                            img = src.read()[:2]
+                    except Exception:
+                        pass
+                else:
+                    arr = np.array(Image.open(path))
+                    if arr.ndim == 2:
+                        img = np.stack([arr] * 2, axis=0)
+                    elif arr.ndim == 3:
+                        if arr.shape[2] <= 4:
+                            arr = arr.transpose(2, 0, 1)
+                        img = arr[:2]
+            except Exception:
+                img = None
+
+        if img is None:
             img = np.zeros((2, self.image_size, self.image_size), dtype=np.float32)
 
-        if img.shape[1] != self.image_size:
+        if img.ndim == 2:
+            img = np.stack([img] * 2, axis=0)
+        elif img.ndim == 3 and img.shape[0] != 2:
+            if img.shape[2] == 2:
+                img = img.transpose(2, 0, 1)
+            else:
+                new_img = np.zeros((2, img.shape[1], img.shape[2]), dtype=img.dtype)
+                new_img[:min(2, img.shape[0])] = img[:min(2, img.shape[0])]
+                img = new_img
+
+        if img.shape[1] != self.image_size or img.shape[2] != self.image_size:
             img = torch.nn.functional.interpolate(
                 torch.from_numpy(img).unsqueeze(0).float(),
                 size=(self.image_size, self.image_size),

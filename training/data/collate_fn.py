@@ -24,21 +24,26 @@ class MultimodalDataCollator:
         batch = {}
 
         # 1. Process S2 pixels
-        if "s2_pixels" in features[0]:
+        if "s2_pixels" in features[0] and features[0]["s2_pixels"] is not None:
             batch["s2_pixels"] = torch.stack([f["s2_pixels"] for f in features])
 
         # 2. Process S1 pixels
-        if "s1_pixels" in features[0]:
+        if "s1_pixels" in features[0] and features[0]["s1_pixels"] is not None:
             batch["s1_pixels"] = torch.stack([f["s1_pixels"] for f in features])
 
         # 3. Process bi-temporal T2 (for change detection)
-        if "s2_t2_pixels" in features[0] and features[0]["s2_t2_pixels"] is not None:
-            batch["s2_t2_pixels"] = torch.stack([f["s2_t2_pixels"] for f in features])
-        if "s1_t2_pixels" in features[0] and features[0]["s1_t2_pixels"] is not None:
-            batch["s1_t2_pixels"] = torch.stack([f["s1_t2_pixels"] for f in features])
+        if "s2_pixels_t2" in features[0] and features[0]["s2_pixels_t2"] is not None:
+            batch["s2_pixels_t2"] = torch.stack([f["s2_pixels_t2"] for f in features])
+        elif "s2_t2_pixels" in features[0] and features[0]["s2_t2_pixels"] is not None:
+            batch["s2_pixels_t2"] = torch.stack([f["s2_t2_pixels"] for f in features])
+
+        if "s1_pixels_t2" in features[0] and features[0]["s1_pixels_t2"] is not None:
+            batch["s1_pixels_t2"] = torch.stack([f["s1_pixels_t2"] for f in features])
+        elif "s1_t2_pixels" in features[0] and features[0]["s1_t2_pixels"] is not None:
+            batch["s1_pixels_t2"] = torch.stack([f["s1_t2_pixels"] for f in features])
 
         # 4. Process text tokens with dynamic padding
-        if "input_ids" in features[0]:
+        if "input_ids" in features[0] and features[0]["input_ids"] is not None:
             max_len = max(len(f["input_ids"]) for f in features)
 
             padded_input_ids = []
