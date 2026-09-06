@@ -79,13 +79,18 @@ class BENBenchDataset(Dataset):
 
         # Filter to only annotations of the requested task type
         self.samples = [s for s in full_data if s["task_type"] == task_type]
-        print(f"[BENBench] Loaded {len(self.samples)} '{task_type}' samples")
+        self._cache_s2: Dict[str, torch.Tensor] = {}
+        self._cache_s1: Dict[str, torch.Tensor] = {}
+        print(f"[BENBench] Loaded {len(self.samples)} '{task_type}' samples (RAM cache enabled)")
 
     def __len__(self):
         return len(self.samples)
 
     def _load_s2(self, path: str) -> torch.Tensor:
-        """Load 10-band S2 image (.npy, .tif, or image) and normalize."""
+        """Load 10-band S2 image (.npy, .tif, or image) and normalize with RAM cache."""
+        if path in self._cache_s2:
+            return self._cache_s2[path]
+
         img = None
         if path and os.path.exists(path):
             try:
@@ -131,10 +136,16 @@ class BENBenchDataset(Dataset):
                 mode="bilinear", align_corners=False
             ).squeeze(0).numpy()
 
-        return torch.from_numpy(normalize_s2(img)).float()
+        res = torch.from_numpy(normalize_s2(img)).float()
+        if path:
+            self._cache_s2[path] = res
+        return res
 
     def _load_s1(self, path: str) -> torch.Tensor:
-        """Load 2-band S1 image (VV, VH) and normalize."""
+        """Load 2-band S1 image (VV, VH) and normalize with RAM cache."""
+        if path in self._cache_s1:
+            return self._cache_s1[path]
+
         img = None
         if path and os.path.exists(path):
             try:
@@ -178,7 +189,10 @@ class BENBenchDataset(Dataset):
                 mode="bilinear", align_corners=False
             ).squeeze(0).numpy()
 
-        return torch.from_numpy(normalize_s1(img)).float()
+        res = torch.from_numpy(normalize_s1(img)).float()
+        if path:
+            self._cache_s1[path] = res
+        return res
 
     def _format_prompt(self, sample: Dict) -> Tuple[str, str]:
         """Format input prompt and target answer for each task type."""
