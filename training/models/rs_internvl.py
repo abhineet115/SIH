@@ -29,9 +29,15 @@ if not hasattr(nn.Module, "all_tied_weights_keys"):
     nn.Module.all_tied_weights_keys = {}
 
 # Disable incompatible pre-installed torchao in peft
+# Must patch BOTH the module-level attr AND the already-imported local name in lora/torchao.py
 try:
     import peft.import_utils
     peft.import_utils.is_torchao_available = lambda: False
+except Exception:
+    pass
+try:
+    import peft.tuners.lora.torchao as _peft_lora_torchao
+    _peft_lora_torchao.is_torchao_available = lambda: False
 except Exception:
     pass
 
