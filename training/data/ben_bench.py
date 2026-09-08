@@ -57,6 +57,8 @@ class BENBenchDataset(Dataset):
     """
 
     TASK_TYPES = ["binary_vqa", "mcq", "captioning", "grounding"]
+    _cache_s2: Dict[str, torch.Tensor] = {}
+    _cache_s1: Dict[str, torch.Tensor] = {}
 
     def __init__(
         self,
@@ -88,8 +90,9 @@ class BENBenchDataset(Dataset):
 
     def _load_s2(self, path: str) -> torch.Tensor:
         """Load 10-band S2 image (.npy, .tif, or image) and normalize with RAM cache."""
-        if path in self._cache_s2:
-            return self._cache_s2[path]
+        cache = getattr(self, "_cache_s2", None)
+        if cache is not None and path in cache:
+            return cache[path]
 
         img = None
         if path and os.path.exists(path):
@@ -138,13 +141,16 @@ class BENBenchDataset(Dataset):
 
         res = torch.from_numpy(normalize_s2(img)).float()
         if path:
+            if getattr(self, "_cache_s2", None) is None:
+                self._cache_s2 = {}
             self._cache_s2[path] = res
         return res
 
     def _load_s1(self, path: str) -> torch.Tensor:
         """Load 2-band S1 image (VV, VH) and normalize with RAM cache."""
-        if path in self._cache_s1:
-            return self._cache_s1[path]
+        cache = getattr(self, "_cache_s1", None)
+        if cache is not None and path in cache:
+            return cache[path]
 
         img = None
         if path and os.path.exists(path):
@@ -191,6 +197,8 @@ class BENBenchDataset(Dataset):
 
         res = torch.from_numpy(normalize_s1(img)).float()
         if path:
+            if getattr(self, "_cache_s1", None) is None:
+                self._cache_s1 = {}
             self._cache_s1[path] = res
         return res
 

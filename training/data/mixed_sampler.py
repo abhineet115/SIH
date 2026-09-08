@@ -38,6 +38,8 @@ class MixedTaskDataset(Dataset):
     ):
         self.tokenizer = tokenizer
         random.seed(seed)
+        self._cache_s2 = {}
+        self._cache_s1 = {}
 
         # Normalize weights
         total = sum(task_weights.values())
@@ -96,6 +98,8 @@ class MixedTaskDataset(Dataset):
         tmp_ds.image_size = 224
         tmp_ds.max_seq_len = 256
         tmp_ds.augment = False
+        tmp_ds._cache_s2 = getattr(self, "_cache_s2", {})
+        tmp_ds._cache_s1 = getattr(self, "_cache_s1", {})
 
         s2 = tmp_ds._load_s2(sample.get("s2_path", ""))
         s1 = tmp_ds._load_s1(sample.get("s1_path", ""))
