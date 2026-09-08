@@ -227,6 +227,19 @@ class BENBenchDataset(Dataset):
             norm_bbox = [bbox[0]/w, bbox[1]/h, bbox[2]/w, bbox[3]/h]
             target = f"[{norm_bbox[0]:.3f}, {norm_bbox[1]:.3f}, {norm_bbox[2]:.3f}, {norm_bbox[3]:.3f}]"
 
+        elif self.task_type == "change_vqa":
+            question = sample.get("question", "Has the land cover changed between these two images?")
+            prompt = (
+                f"You are comparing two satellite images taken at different times.\n"
+                f"Question: {question}\nAnswer:"
+            )
+            target = str(sample.get("answer", sample.get("label", "Yes")))
+
+        else:
+            # Fallback for unknown task types
+            prompt = sample.get("question", "Describe this satellite image.")
+            target = str(sample.get("answer", sample.get("caption", "")))
+
         return prompt, target
 
     def __getitem__(self, idx: int) -> Dict:
