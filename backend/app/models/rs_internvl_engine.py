@@ -66,8 +66,58 @@ class RSInternVLEngine:
             except Exception as e:
                 logger.warning(f"[RSInternVL] Could not load local weights ({e}). Operating in hybrid heuristic mode.")
                 self._is_real_model = False
+        elif WEIGHTS_DIR.exists() and (WEIGHTS_DIR / "adapter_config.json").exists():
+            # LoRA adapter export -- load base from HuggingFace then apply adapter
+            try:
+                from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+                from peft import PeftModel
+
+                BASE_MODEL = "OpenGVLab/InternVL3-1B"
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                logger.info(f"[RSInternVL] LoRA adapter found. Loading base model '{BASE_MODEL}' on {device}...")
+
+                bnb_config = None
+                if device == "cuda":
+                    bnb_config = BitsAndBytesConfig(
+                        load_in_4bit=True,
+                        bnb_4bit_quant_type="nf4",
+                        bnb_4bit_compute_dtype=torch.float16,
+                        bnb_4bit_use_double_quant=True,
+                    )
+
+                # Tokenizer is bundled in the adapter dir
+                self._tokenizer = AutoTokenizer.from_pretrained(str(WEIGHTS_DIR), trust_remote_code=True)
+                if self._tokenizer.pad_token is None:
+                    self._tokenizer.pad_token = self._tokenizer.eos_token
+
+                # Load InternVL3-1B base (~2.2 GB on first run, cached afterwards)
+                base = AutoModelForCausalLM.from_pretrained(
+                    BASE_MODEL,
+                    quantization_config=bnb_config,
+                    device_map="auto" if device == "cuda" else None,
+                    trust_remote_code=True,
+                )
+
+                # Apply LoRA fine-tuned adapter
+                self._model = PeftModel.from_pretrained(base, str(WEIGHTS_DIR))
+                self._model.eval()
+
+                # Load S1/S2 projection heads if bundled
+                proj_path = WEIGHTS_DIR / "projection_heads.pt"
+                if proj_path.exists():
+                    self._projection_heads = torch.load(
+                        str(proj_path), map_location=device, weights_only=False
+                    )
+                    logger.info("[RSInternVL] Projection heads (S1/S2 encoders) loaded.")
+
+                self._is_real_model = True
+                logger.info("[RSInternVL] Successfully loaded RS-InternVL-1B + R6 LoRA adapter!")
+            except Exception as e:
+                logger.warning(f"[RSInternVL] Could not load LoRA adapter ({e}). Operating in hybrid heuristic mode.")
+                self._is_real_model = False
+
         else:
-            logger.info("[RSInternVL] Checkpoint not yet downloaded to backend/weights. Operating in hybrid mode.")
+            logger.info("[RSInternVL] Weights not yet downloaded to backend/weights. Operating in hybrid mode.")
             self._is_real_model = False
 
     @property
