@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: satquery-backend
+    env: python
+    branch: main
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: COLAB_API_URL
+        value: "https://wild-pans-fold.loca.lt" # Update this whenever you restart Colab

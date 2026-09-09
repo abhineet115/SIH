@@ -112,7 +112,8 @@ export function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div className="bg-grid-moving" />
       {/* Header */}
       <Navbar
         scenarios={scenarios}
@@ -126,55 +127,80 @@ export function App() {
       {/* Main Workstation Layout */}
       <main style={{
         flex: 1,
-        padding: '16px 20px',
+        padding: '12px 16px',
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 0.85fr)',
+        gridTemplateColumns: '350px 1fr 400px',
         gap: '16px',
-        alignItems: 'start'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        {/* Left Column: Visual GIS Viewport & Prompt Controls */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Dual Slot Uploader & Metadata Chips */}
-          <ImageUploader
-            primaryMeta={primaryMeta}
-            secondaryMeta={secondaryMeta}
-            onPrimaryUploaded={handlePrimaryUploaded}
-            onSecondaryUploaded={handleSecondaryUploaded}
-            onClearSecondary={handleClearSecondary}
-          />
-
-          {/* Interactive GIS Viewer with Split Wipe & Vector Overlays */}
-          <ImageViewer
-            primaryPreview={primaryPreview}
-            secondaryPreview={secondaryPreview}
-            primaryMeta={primaryMeta}
-            secondaryMeta={secondaryMeta}
-            boundingBoxes={result?.bounding_boxes || []}
-            changePolygons={result?.change_polygons || []}
-            fusionLayers={result?.fusion_layers || []}
-          />
-
-          {/* Agentic Prompt Input with Scenario Preset Chips */}
-          <QueryBar
-            onRunQuery={(q) => handleRunQuery(q)}
-            isLoading={isLoading}
-            suggestedQueries={currentScenario?.suggested_queries || []}
-          />
+        {/* Left Column: Data/Input Viewer */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', overflow: 'hidden' }}>
+          <div className="sci-fi-frame" style={{ flexShrink: 0 }}>
+            <ImageUploader
+              primaryMeta={primaryMeta}
+              secondaryMeta={secondaryMeta}
+              onPrimaryUploaded={handlePrimaryUploaded}
+              onSecondaryUploaded={handleSecondaryUploaded}
+              onClearSecondary={handleClearSecondary}
+            />
+          </div>
         </section>
 
-        {/* Right Column: Agentic Intelligence, Confidence & Pipeline Audit */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Executive Assessment & Key Metrics */}
-          <ResultCard result={result} />
+        {/* Center Column: Interactive Geospatial Viewport */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', overflow: 'hidden' }}>
+          <div className="sci-fi-frame" style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <ImageViewer
+              primaryPreview={primaryPreview}
+              secondaryPreview={secondaryPreview}
+              primaryMeta={primaryMeta}
+              secondaryMeta={secondaryMeta}
+              boundingBoxes={result?.bounding_boxes || []}
+              changePolygons={result?.change_polygons || []}
+              fusionLayers={result?.fusion_layers || []}
+            />
+          </div>
+        </section>
 
-          {/* 4-Signal Harmonic Confidence Matrix */}
-          <ConfidenceBadge confidence={result?.confidence || null} />
+        {/* Right Column: SatQuery Agent & Results */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', overflowY: 'auto', paddingRight: '4px' }} className="custom-scroll">
+          <div className="glass-panel sci-fi-frame" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ color: 'var(--primary-glow)', letterSpacing: '2px', fontSize: '1.2rem', textTransform: 'uppercase', textShadow: '0 0 10px rgba(56,189,248,0.5)', margin: 0 }}>
+              SatQuery Agent
+            </h3>
+            
+            <QueryBar
+              onRunQuery={(q) => handleRunQuery(q)}
+              isLoading={isLoading}
+              suggestedQueries={currentScenario?.suggested_queries || []}
+            />
+          </div>
 
-          {/* Observable Execution Trace Timeline */}
-          <ExecutionTraceView
-            trace={result?.execution_trace || []}
-            totalLatencyMs={result?.total_latency_ms || 0}
-          />
+          {result ? (
+            <>
+              {/* Executive Assessment & Key Metrics */}
+              <div className="animate-slide-up" style={{ animationDelay: '0.1s', opacity: 0, animationFillMode: 'forwards', flexShrink: 0 }}>
+                <ResultCard result={result} />
+              </div>
+
+              {/* 4-Signal Harmonic Confidence Matrix */}
+              <div className="animate-slide-up" style={{ animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards', flexShrink: 0 }}>
+                <ConfidenceBadge confidence={result?.confidence || null} />
+              </div>
+
+              {/* Observable Execution Trace Timeline */}
+              <div className="animate-slide-up" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards', flexShrink: 0 }}>
+                <ExecutionTraceView
+                  trace={result?.execution_trace || []}
+                  totalLatencyMs={result?.total_latency_ms || 0}
+                />
+              </div>
+            </>
+          ) : (
+             <div className="glass-panel animate-float" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', border: '1px dashed rgba(56, 189, 248, 0.3)' }}>
+               <h4 style={{ color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>Ready for Analysis</h4>
+             </div>
+          )}
         </section>
       </main>
 

@@ -21,3 +21,6 @@ MAX_FILE_SIZE_MB = 100
 
 # ISRO default coordinates (e.g. New Delhi / NCR bounding box)
 DEFAULT_CRS = "EPSG:32643"  # WGS 84 / UTM zone 43N
+
+# Colab Bridge
+COLAB_API_URL = os.getenv("COLAB_API_URL", "https://wild-pans-fold.loca.lt")
