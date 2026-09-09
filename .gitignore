@@ -15,3 +15,36 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Databases & local state
+*.db
+*.sqlite
+*.sqlite3
+backend/data/satquery.db
+
+# Uploads & generated outputs
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+backend/data/reports/*
+!backend/data/reports/.gitkeep
+backend/data/real_satellite_scenes/*
+!backend/data/real_satellite_scenes/.gitkeep
+
+# Large satellite imagery (>100MB - exceeds GitHub limit)
+*.tif
+*.tiff
+*.geotiff
+!backend/data/sample_images/*.tif
+!backend/data/sample_images/*.tiff
+
+# ML model weights (large binary files)
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.gguf
+backend/weights/**/*.safetensors
+backend/weights/**/*.pt
+backend/weights/**/*.pth
+backend/weights/**/*.bin
+backend/weights/**/*.gguf

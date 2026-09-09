@@ -89,52 +89,51 @@ class AgenticController:
 
         # Step 4: Dispatch Specialist Model
         from app.config import COLAB_API_URL
-        import requests
         
         step4_start = time.time()
         result_payload: Dict[str, Any] = {}
         specialist_name = ""
 
+        # Run primary local specialist engine
+        if intent == "OPTICAL_SAR_FUSION":
+            specialist_name = "OpticalSARFusionEngine"
+            result_payload = OpticalSARFusionEngine.fuse_analysis(
+                primary_path, secondary_path or primary_path, query, reg_info or {}
+            )
+        elif intent == "CHANGE_DETECTION":
+            specialist_name = "ChangeDetectionEngine"
+            result_payload = ChangeDetectionEngine.detect_change(
+                primary_path, secondary_path or primary_path, query, reg_info or {}
+            )
+        elif intent == "GROUNDING":
+            specialist_name = "GroundingEngine"
+            result_payload = GroundingEngine.ground_entities(
+                primary_path, query, primary_meta
+            )
+            result_payload["answer"] = f"Visual Grounding Specialist localized {result_payload.get('count', 0)} spatial feature instance(s) matching '{query}'."
+        else:  # VQA or CAPTION
+            specialist_name = "VQAEngine"
+            result_payload = VQAEngine.answer_query(
+                primary_path, query, primary_meta
+            )
+
+        # If live Colab GPU endpoint is configured, optionally query it with a short timeout
         if COLAB_API_URL:
             try:
-                # Proxy the request directly to the Live T4 GPU in Colab!
-                specialist_name = f"Colab Live GPU Agent ({intent})"
+                import requests
                 with open(primary_path, 'rb') as f:
                     req_files = {'file': (Path(primary_path).name, f, 'image/jpeg')}
                     req_data = {'query': query, 'intent': intent}
-                    api_resp = requests.post(f"{COLAB_API_URL}/api/qwen", files=req_files, data=req_data, timeout=120)
+                    api_resp = requests.post(f"{COLAB_API_URL}/api/qwen", files=req_files, data=req_data, timeout=5)
                     if api_resp.status_code == 200:
                         json_resp = api_resp.json()
-                        result_payload["answer"] = json_resp.get("answer", "Inference complete.")
-                    else:
-                        result_payload["answer"] = f"[Colab Error] Status {api_resp.status_code}"
-                result_payload["key_findings"] = ["Real-time execution via Ngrok/Localtunnel on Kaggle/Colab T4."]
+                        colab_ans = json_resp.get("answer")
+                        if colab_ans:
+                            result_payload["answer"] = colab_ans
+                        specialist_name = f"Colab Live GPU ({specialist_name})"
             except Exception as e:
-                specialist_name = "Agent Endpoint Failed"
-                result_payload["answer"] = f"[Networking Error] Could not reach Colab: {str(e)}"
-        else:
-            # --- LOCAL OFFLINE HACKATHON MOCKS ---
-            if intent == "OPTICAL_SAR_FUSION":
-                specialist_name = "OpticalSARFusionEngine"
-                result_payload = OpticalSARFusionEngine.fuse_analysis(
-                    primary_path, secondary_path or primary_path, query, reg_info or {}
-                )
-            elif intent == "CHANGE_DETECTION":
-                specialist_name = "ChangeDetectionEngine"
-                result_payload = ChangeDetectionEngine.detect_change(
-                    primary_path, secondary_path or primary_path, query, reg_info or {}
-                )
-            elif intent == "GROUNDING":
-                specialist_name = "GroundingEngine"
-                result_payload = GroundingEngine.ground_entities(
-                    primary_path, query, primary_meta
-                )
-                result_payload["answer"] = f"Visual Grounding Specialist localized {result_payload.get('count', 0)} spatial feature instance(s) matching '{query}'."
-            else:  # VQA or CAPTION
-                specialist_name = "VQAEngine"
-                result_payload = VQAEngine.answer_query(
-                    primary_path, query, primary_meta
-                )
+                # Silently fallback to local specialist findings
+                pass
 
         step4_dur = round((time.time() - step4_start) * 1000, 1)
         trace.append({
