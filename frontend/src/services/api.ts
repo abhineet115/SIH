@@ -1,6 +1,6 @@
 import type { AnalysisResult, SampleScenario, RasterMetadata } from "../types";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 export async function fetchSampleScenarios(): Promise<SampleScenario[]> {
   const resp = await fetch(`${API_BASE}/samples`);
@@ -70,5 +70,6 @@ export async function exportPDFReport(
   }
 
   const data = await resp.json();
-  return `http://localhost:8000${data.download_url}`;
+  const baseUrl = API_BASE.replace("/api", "");
+  return `${baseUrl}${data.download_url}`;
 }
