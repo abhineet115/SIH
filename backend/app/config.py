@@ -3,6 +3,23 @@ from pathlib import Path
 
 # Base paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env if present
+env_path = BASE_DIR / ".env"
+if env_path.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_path)
+    except ImportError:
+        # Fallback manual parser if python-dotenv is not installed
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k, v = k.strip(), v.strip().strip("'\"")
+                    if k not in os.environ and v:
+                        os.environ[k] = v
 DATA_DIR = BASE_DIR / "data"
 UPLOADS_DIR = DATA_DIR / "uploads"
 SAMPLES_DIR = DATA_DIR / "sample_images"

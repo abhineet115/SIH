@@ -110,29 +110,38 @@ class AgenticController:
             result_payload = GroundingEngine.ground_entities(
                 primary_path, query, primary_meta
             )
-            result_payload["answer"] = f"Visual Grounding Specialist localized {result_payload.get('count', 0)} spatial feature instance(s) matching '{query}'."
+            count = result_payload.get("count", 0)
+            entity_name = result_payload.get("entity_name", "Target Feature")
+            boxes = result_payload.get("bounding_boxes", [])
+            total_ha = result_payload.get("total_grounded_ha", 0.0)
+            quads = list(set([b.get("label", "").split("(")[-1].rstrip(")") for b in boxes if "(" in b.get("label", "")]))
+            quad_str = f" in {', '.join(quads)}" if quads else ""
+            details_str = f" covering ~{total_ha} ha{quad_str} at {primary_meta.get('gsd_meters', 10.0)}m GSD." if boxes else "."
+            result_payload["answer"] = f"Visual Grounding localized {count} {entity_name} cluster(s) matching '{query}'{details_str}"
         else:  # VQA or CAPTION
             specialist_name = "VQAEngine"
             result_payload = VQAEngine.answer_query(
                 primary_path, query, primary_meta
             )
 
-        # If live Colab GPU endpoint is configured, optionally query it with a short timeout
+        # If live Colab GPU endpoint is configured, query it
         if COLAB_API_URL:
             try:
                 import requests
                 with open(primary_path, 'rb') as f:
                     req_files = {'file': (Path(primary_path).name, f, 'image/jpeg')}
                     req_data = {'query': query, 'intent': intent}
-                    api_resp = requests.post(f"{COLAB_API_URL}/api/qwen", files=req_files, data=req_data, timeout=5)
+                    endpoint = f"{COLAB_API_URL.rstrip('/')}/api/qwen"
+                    api_resp = requests.post(endpoint, files=req_files, data=req_data, timeout=8)
                     if api_resp.status_code == 200:
                         json_resp = api_resp.json()
                         colab_ans = json_resp.get("answer")
                         if colab_ans:
                             result_payload["answer"] = colab_ans
+                            result_payload["model_source"] = "colab_live_vlm"
                         specialist_name = f"Colab Live GPU ({specialist_name})"
             except Exception as e:
-                # Silently fallback to local specialist findings
+                # Fallback cleanly to high-accuracy local specialist findings
                 pass
 
         step4_dur = round((time.time() - step4_start) * 1000, 1)
