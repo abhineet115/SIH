@@ -10,12 +10,27 @@ import { ReportModal } from "./components/ReportModal";
 import { useToast } from "./components/Toast";
 import type { SampleScenario, RasterMetadata, AnalysisResult } from "./types";
 import { fetchSampleScenarios, runAgenticQuery } from "./services/api";
-import { Compass, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, SlidersHorizontal, MessageSquare } from "lucide-react";
 
 export function App() {
   const { addToast } = useToast();
   const [scenarios, setScenarios] = useState<SampleScenario[]>([]);
   const [currentScenario, setCurrentScenario] = useState<SampleScenario | null>(null);
+
+  // Theme state: default to dark or saved preference
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("satquery_theme");
+    return (saved === "light" || saved === "dark") ? saved : "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("satquery_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   // Raster state
   const [primaryMeta, setPrimaryMeta] = useState<RasterMetadata | null>(null);
@@ -31,6 +46,7 @@ export function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [backendOnline, setBackendOnline] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState<boolean>(false);
 
   // Load sample scenarios on initial mount
   useEffect(() => {
@@ -75,7 +91,7 @@ export function App() {
     const activeS = sPath !== undefined ? sPath : secondaryPath;
 
     if (!activeP) {
-      addToast("Please upload or select a primary satellite image first.", "info");
+      addToast("Please select a scenario or upload a satellite image.", "info");
       return;
     }
 
@@ -96,14 +112,14 @@ export function App() {
     setPrimaryMeta(meta);
     setPrimaryPath(path);
     setPrimaryPreview(meta.preview_b64 || null);
-    addToast(`✓ ${meta.filename} loaded — ${meta.bands} bands, ${meta.width}×${meta.height} @ ${meta.gsd_meters}m GSD`, "success");
+    addToast(`Loaded ${meta.filename}`, "success");
   };
 
   const handleSecondaryUploaded = (meta: RasterMetadata, path: string) => {
     setSecondaryMeta(meta);
     setSecondaryPath(path);
     setSecondaryPreview(meta.preview_b64 || null);
-    addToast(`✓ Secondary raster loaded — ${meta.filename}`, "success");
+    addToast(`Loaded secondary ${meta.filename}`, "success");
   };
 
   const handleClearSecondary = () => {
@@ -113,10 +129,8 @@ export function App() {
   };
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div className="bg-grid-moving" />
-      
-      {/* ISRO Command Header */}
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--bg-main)" }}>
+      {/* Clean Header with Scenario Switcher and Theme Toggle */}
       <Navbar
         scenarios={scenarios}
         currentScenario={currentScenario}
@@ -124,74 +138,25 @@ export function App() {
         onExportReport={() => setIsReportModalOpen(true)}
         hasResult={Boolean(result)}
         backendOnline={backendOnline}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
-      {/* Main Tactical Workstation Layout */}
+      {/* Main 2-Pane Workstation */}
       <main
         style={{
           flex: 1,
-          padding: "10px 16px 14px",
+          padding: "12px 20px 16px",
           display: "grid",
-          gridTemplateColumns: "330px 1fr 420px",
-          gap: "14px",
-          position: "relative",
+          gridTemplateColumns: "1.4fr 1fr",
+          gap: "16px",
           overflow: "hidden",
         }}
       >
-        {/* Left Column: Satellite Telemetry & Ingestion Console */}
-        <section style={{ display: "flex", flexDirection: "column", gap: "12px", height: "100%", overflowY: "auto" }} className="custom-scroll">
-          <div className="sci-fi-frame" style={{ flexShrink: 0 }}>
-            <ImageUploader
-              primaryMeta={primaryMeta}
-              secondaryMeta={secondaryMeta}
-              onPrimaryUploaded={handlePrimaryUploaded}
-              onSecondaryUploaded={handleSecondaryUploaded}
-              onClearSecondary={handleClearSecondary}
-            />
-          </div>
-
-          {/* Quick Scenario Benchmark Selector Cards */}
-          {scenarios.length > 0 && (
-            <div className="glass-panel" style={{ padding: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
-                <Sparkles size={14} color="#f59e0b" />
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.03em" }}>
-                  ISRO Mission Benchmarks
-                </span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {scenarios.map((sc) => {
-                  const isSelected = currentScenario?.id === sc.id;
-                  return (
-                    <div
-                      key={sc.id}
-                      onClick={() => selectScenario(sc)}
-                      style={{
-                        padding: "8px 10px",
-                        borderRadius: "8px",
-                        background: isSelected ? "rgba(0, 240, 255, 0.12)" : "rgba(15, 23, 42, 0.6)",
-                        border: isSelected ? "1px solid #00f0ff" : "1px solid rgba(56, 189, 248, 0.12)",
-                        cursor: "pointer",
-                        transition: "all 0.18s ease",
-                      }}
-                    >
-                      <div style={{ fontSize: "0.76rem", fontWeight: 700, color: isSelected ? "#00f0ff" : "#f1f5f9" }}>
-                        {sc.title}
-                      </div>
-                      <div style={{ fontSize: "0.68rem", color: "#94a3b8", marginTop: "2px", lineHeight: 1.3 }}>
-                        {sc.description}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Center Column: Interactive Tactical Geospatial Viewport */}
-        <section style={{ display: "flex", flexDirection: "column", gap: "10px", height: "100%", overflow: "hidden" }}>
-          <div className="sci-fi-frame" style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {/* Left Pane: Image Viewer & Ingestion */}
+        <section style={{ display: "flex", flexDirection: "column", gap: "12px", height: "100%", overflow: "hidden" }}>
+          {/* Main Viewport */}
+          <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
             <ImageViewer
               primaryPreview={primaryPreview}
               secondaryPreview={secondaryPreview}
@@ -202,12 +167,33 @@ export function App() {
               fusionLayers={result?.fusion_layers || []}
             />
           </div>
+
+          {/* Compact Ingestion Card */}
+          <div style={{ flexShrink: 0 }}>
+            <ImageUploader
+              primaryMeta={primaryMeta}
+              secondaryMeta={secondaryMeta}
+              onPrimaryUploaded={handlePrimaryUploaded}
+              onSecondaryUploaded={handleSecondaryUploaded}
+              onClearSecondary={handleClearSecondary}
+            />
+          </div>
         </section>
 
-        {/* Right Column: SatQuery Neural Agent & Intelligence Output */}
-        <section style={{ display: "flex", flexDirection: "column", gap: "12px", height: "100%", overflowY: "auto", paddingRight: "2px" }} className="custom-scroll">
+        {/* Right Pane: Query Input & Results */}
+        <section
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            height: "100%",
+            overflowY: "auto",
+            paddingRight: "2px",
+          }}
+          className="custom-scroll"
+        >
           {/* Query Bar */}
-          <div className="sci-fi-frame" style={{ flexShrink: 0 }}>
+          <div style={{ flexShrink: 0 }}>
             <QueryBar
               onRunQuery={(q) => handleRunQuery(q)}
               isLoading={isLoading}
@@ -215,46 +201,79 @@ export function App() {
             />
           </div>
 
+          {/* Results Area */}
           {result ? (
-            <>
-              {/* Executive Assessment & Metrics */}
-              <div className="animate-slide-up" style={{ animationDelay: "0.05s", opacity: 0, animationFillMode: "forwards", flexShrink: 0 }}>
-                <ResultCard result={result} />
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Executive Assessment */}
+              <ResultCard result={result} />
 
-              {/* 4-Signal Harmonic Confidence Matrix */}
-              <div className="animate-slide-up" style={{ animationDelay: "0.15s", opacity: 0, animationFillMode: "forwards", flexShrink: 0 }}>
-                <ConfidenceBadge confidence={result?.confidence || null} />
-              </div>
+              {/* Collapsible Technical Details (Confidence & DAG Trace) */}
+              <div
+                style={{
+                  background: "var(--bg-card)",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border-subtle)",
+                  overflow: "hidden",
+                }}
+              >
+                <button
+                  onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 14px",
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--text-muted)",
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <SlidersHorizontal size={14} color="var(--primary)" />
+                    <span>Technical Verification & Execution Trace</span>
+                  </div>
+                  {showTechnicalDetails ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                </button>
 
-              {/* Observable Pipeline Trace DAG */}
-              <div className="animate-slide-up" style={{ animationDelay: "0.25s", opacity: 0, animationFillMode: "forwards", flexShrink: 0 }}>
-                <ExecutionTraceView
-                  trace={result?.execution_trace || []}
-                  totalLatencyMs={result?.total_latency_ms || 0}
-                />
+                {showTechnicalDetails && (
+                  <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <ConfidenceBadge confidence={result?.confidence || null} />
+                    <ExecutionTraceView
+                      trace={result?.execution_trace || []}
+                      totalLatencyMs={result?.total_latency_ms || 0}
+                    />
+                  </div>
+                )}
               </div>
-            </>
+            </div>
           ) : (
             <div
-              className="glass-panel animate-float"
               style={{
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: "200px",
-                border: "1px dashed rgba(0, 240, 255, 0.3)",
+                minHeight: "220px",
+                borderRadius: "12px",
+                border: "1px dashed var(--border-subtle)",
+                background: "var(--bg-card)",
+                padding: "24px",
+                textAlign: "center",
                 gap: "8px",
               }}
             >
-              <Compass size={28} color="#00f0ff" style={{ opacity: 0.6 }} />
-              <h4 style={{ color: "var(--text-dim)", letterSpacing: "1.5px", textTransform: "uppercase", margin: 0, fontSize: "0.85rem" }}>
-                Ready for Analysis
-              </h4>
-              <p style={{ fontSize: "0.72rem", color: "#475569", margin: 0 }}>
-                Dispatch a query to activate specialist models
+              <MessageSquare size={26} color="var(--text-muted)" style={{ opacity: 0.6 }} />
+              <p style={{ margin: 0, fontSize: "0.86rem", fontWeight: 600, color: "var(--text-main)" }}>
+                Ready to Analyze
+              </p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                Type a question above or choose a suggestion to get started.
               </p>
             </div>
           )}
@@ -272,4 +291,3 @@ export function App() {
 }
 
 export default App;
-

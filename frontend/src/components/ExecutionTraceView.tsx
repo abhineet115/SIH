@@ -17,13 +17,13 @@ export const ExecutionTraceView: React.FC<ExecutionTraceViewProps> = ({
 
   return (
     <div
-      className="glass-panel"
       style={{
-        padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
-        background: "rgba(8, 14, 28, 0.85)",
-        border: "1px solid rgba(56, 189, 248, 0.2)",
+        background: "var(--bg-card)",
+        padding: "14px 16px",
+        borderRadius: "12px",
+        border: "1px solid var(--border-subtle)",
       }}
     >
       {/* Header */}
@@ -34,21 +34,23 @@ export const ExecutionTraceView: React.FC<ExecutionTraceViewProps> = ({
           justifyContent: "space-between",
           alignItems: "center",
           cursor: "pointer",
+          userSelect: "none",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Cpu size={15} color="#00f0ff" />
-          <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.02em" }}>
-            Observable Agent Pipeline DAG
+          <Cpu size={15} color="var(--primary)" />
+          <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-main)" }}>
+            Execution Trace
           </span>
           <span
             style={{
-              fontSize: "0.65rem",
-              fontWeight: 700,
+              fontSize: "0.68rem",
+              fontWeight: 600,
               padding: "1px 6px",
               borderRadius: "4px",
-              background: "rgba(0, 240, 255, 0.15)",
-              color: "#00f0ff",
+              background: "var(--bg-card-subtle)",
+              color: "var(--text-muted)",
+              border: "1px solid var(--border-subtle)",
               fontFamily: "var(--font-mono)",
             }}
           >
@@ -63,16 +65,16 @@ export const ExecutionTraceView: React.FC<ExecutionTraceViewProps> = ({
               alignItems: "center",
               gap: "4px",
               fontSize: "0.72rem",
-              color: "#94a3b8",
+              color: "var(--text-muted)",
               fontFamily: "var(--font-mono)",
             }}
           >
-            <Clock size={12} color="#00f0ff" />
+            <Clock size={12} color="var(--text-muted)" />
             <span>
-              Total: <strong style={{ color: "#f8fafc" }}>{totalLatencyMs} ms</strong>
+              Total: <strong style={{ color: "var(--text-main)" }}>{totalLatencyMs} ms</strong>
             </span>
           </div>
-          {isExpanded ? <ChevronUp size={15} color="#94a3b8" /> : <ChevronDown size={15} color="#94a3b8" />}
+          {isExpanded ? <ChevronUp size={15} color="var(--text-muted)" /> : <ChevronDown size={15} color="var(--text-muted)" />}
         </div>
       </div>
 
@@ -86,47 +88,50 @@ export const ExecutionTraceView: React.FC<ExecutionTraceViewProps> = ({
                 display: "flex",
                 alignItems: "flex-start",
                 gap: "10px",
-                background: "rgba(12, 20, 40, 0.7)",
-                border: "1px solid rgba(56, 189, 248, 0.12)",
+                background: "var(--bg-card-subtle)",
+                border: "1px solid var(--border-subtle)",
                 padding: "8px 10px",
                 borderRadius: "6px",
-                borderLeft: "3px solid #00f0ff",
-                fontSize: "0.75rem",
+                borderLeft: "3px solid var(--primary)",
+                fontSize: "0.76rem",
               }}
             >
               <div style={{ marginTop: "2px" }}>
-                <CheckCircle2 size={13} color="#10b981" />
+                <CheckCircle2 size={13} color="var(--success)" />
               </div>
 
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontWeight: 700, color: "#f1f5f9" }}>
-                    Step {step.step}: {step.action}
-                  </span>
-                  <span style={{ color: "#00f0ff", fontFamily: "var(--font-mono)", fontSize: "0.7rem", fontWeight: 700 }}>
+                  <span style={{ fontWeight: 600, color: "var(--text-main)" }}>{step.action}</span>
+                  <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>
                     {step.latency_ms} ms
                   </span>
                 </div>
+                {step.details && (
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.72rem", lineHeight: 1.35 }}>
+                    {step.details}
+                  </span>
+                )}
 
-                <div style={{ color: "#94a3b8", marginTop: "2px", fontSize: "0.7rem", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <Terminal size={11} color="#c084fc" />
-                  <span>Specialist Tool:</span>
-                  <code
+                {step.tool && (
+                  <div
                     style={{
-                      color: "#c084fc",
-                      background: "rgba(192, 132, 252, 0.12)",
-                      padding: "1px 5px",
-                      borderRadius: "3px",
+                      marginTop: "3px",
+                      background: "var(--bg-main)",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
                       fontFamily: "var(--font-mono)",
+                      fontSize: "0.68rem",
+                      color: "var(--text-muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
                     }}
                   >
-                    {step.tool}
-                  </code>
-                </div>
-
-                <div style={{ color: "#cbd5e1", marginTop: "4px", fontSize: "0.72rem", lineHeight: 1.4 }}>
-                  {step.details}
-                </div>
+                    <Terminal size={10} color="var(--primary)" />
+                    <span>Tool: {step.tool} ({step.status})</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -135,4 +140,3 @@ export const ExecutionTraceView: React.FC<ExecutionTraceViewProps> = ({
     </div>
   );
 };
-

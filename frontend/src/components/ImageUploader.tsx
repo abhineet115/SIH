@@ -5,10 +5,9 @@ import {
   Radio,
   X,
   CheckCircle,
-  Loader,
+  Loader2,
   RefreshCw,
-  AlertTriangle,
-  Cpu
+  AlertCircle
 } from "lucide-react";
 import type { RasterMetadata } from "../types";
 import { uploadRasterFile } from "../services/api";
@@ -35,44 +34,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const [primaryUploadState, setPrimaryUploadState] = useState<UploadState>("idle");
   const [secondaryUploadState, setSecondaryUploadState] = useState<UploadState>("idle");
-  const [primaryProgress, setPrimaryProgress] = useState(0);
-  const [secondaryProgress, setSecondaryProgress] = useState(0);
   const [primaryError, setPrimaryError] = useState<string | null>(null);
   const [secondaryError, setSecondaryError] = useState<string | null>(null);
   const [primaryDragOver, setPrimaryDragOver] = useState(false);
   const [secondaryDragOver, setSecondaryDragOver] = useState(false);
 
-  const simulateProgress = (setProgress: (v: number) => void, onDone: () => void) => {
-    let val = 0;
-    const interval = setInterval(() => {
-      val += Math.random() * 25;
-      if (val >= 90) {
-        clearInterval(interval);
-        setProgress(90);
-        onDone();
-      } else {
-        setProgress(Math.round(val));
-      }
-    }, 120);
-    return interval;
-  };
-
   const handleUpload = useCallback(
     async (file: File, isPrimary: boolean) => {
       const setUploadState = isPrimary ? setPrimaryUploadState : setSecondaryUploadState;
-      const setProgress = isPrimary ? setPrimaryProgress : setSecondaryProgress;
       const setError = isPrimary ? setPrimaryError : setSecondaryError;
 
       setError(null);
-      setProgress(0);
       setUploadState("uploading");
-
-      const interval = simulateProgress(setProgress, () => {});
 
       try {
         const resp = await uploadRasterFile(file);
-        clearInterval(interval);
-        setProgress(100);
         setUploadState("done");
         if (isPrimary) {
           onPrimaryUploaded(resp.metadata, resp.file_path);
@@ -80,8 +56,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           onSecondaryUploaded(resp.metadata, resp.file_path);
         }
       } catch (err: any) {
-        clearInterval(interval);
-        setProgress(0);
         setUploadState("error");
         setError(err.message || "Upload failed");
       }
@@ -100,27 +74,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     [handleUpload]
   );
 
-  const renderSlotCard = (
+  const renderSlot = (
     label: string,
-    tag: string,
     meta: RasterMetadata | null,
     inputRef: React.RefObject<HTMLInputElement | null>,
     isPrimary: boolean
   ) => {
     const uploadState = isPrimary ? primaryUploadState : secondaryUploadState;
-    const progress = isPrimary ? primaryProgress : secondaryProgress;
     const error = isPrimary ? primaryError : secondaryError;
     const isDragOver = isPrimary ? primaryDragOver : secondaryDragOver;
+    const isUploading = uploadState === "uploading";
     const modality = meta?.modality_info?.modality || (isPrimary ? "OPTICAL" : "SAR");
     const isSar = modality === "SAR";
-    const isUploading = uploadState === "uploading";
-
-    const accentColor = isSar ? "#a855f7" : "#00f0ff";
-    const accentBg = isSar ? "rgba(168,85,247,0.16)" : "rgba(0,240,255,0.14)";
 
     return (
       <div
-        className="glass-panel"
         onDragOver={(e) => {
           e.preventDefault();
           if (isPrimary) setPrimaryDragOver(true);
@@ -132,62 +100,45 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         }}
         onDrop={(e) => handleDrop(e, isPrimary)}
         style={{
-          padding: "12px",
+          flex: 1,
+          padding: "10px 12px",
+          background: isDragOver ? "var(--primary-subtle)" : "var(--bg-card-subtle)",
+          border: isDragOver
+            ? "1px solid var(--primary)"
+            : error
+            ? "1px solid rgba(239, 68, 68, 0.4)"
+            : "1px solid var(--border-subtle)",
+          borderRadius: "8px",
           display: "flex",
           flexDirection: "column",
-          gap: "8px",
-          background: isDragOver
-            ? "rgba(0,240,255,0.12)"
-            : meta
-            ? "rgba(10, 18, 36, 0.88)"
-            : "rgba(8, 14, 28, 0.55)",
-          border: isDragOver
-            ? "1px solid #00f0ff"
-            : error
-            ? "1px solid rgba(239,68,68,0.5)"
-            : meta
-            ? "1px solid rgba(56, 189, 248, 0.25)"
-            : "1px dashed rgba(56, 189, 248, 0.2)",
-          borderRadius: "10px",
-          transition: "all 0.2s ease",
+          gap: "6px",
+          minWidth: 0,
         }}
       >
-        {/* Header row */}
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            {isSar ? <Radio size={14} color="#a855f7" /> : <Layers size={14} color="#00f0ff" />}
-            <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f1f5f9" }}>{label}</span>
-            <span
-              style={{
-                fontSize: "0.62rem",
-                padding: "1px 5px",
-                borderRadius: "3px",
-                background: "rgba(56, 189, 248, 0.12)",
-                color: "#94a3b8",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              {tag}
+            {isSar ? <Radio size={13} color="#a855f7" /> : <Layers size={13} color="var(--primary)" />}
+            <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-main)" }}>
+              {label}
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
             {meta && (
               <button
-                title="Replace with new GeoTIFF"
+                title="Change file"
                 onClick={() => inputRef.current?.click()}
                 disabled={isUploading}
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#64748b",
+                  color: "var(--text-muted)",
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
                   padding: "2px",
                 }}
               >
-                <RefreshCw size={12} />
+                <RefreshCw size={11} />
               </button>
             )}
             {!isPrimary && meta && (
@@ -196,164 +147,72 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#94a3b8",
+                  color: "var(--text-muted)",
                   cursor: "pointer",
+                  padding: "2px",
                 }}
-                title="Remove secondary raster"
+                title="Remove secondary"
               >
-                <X size={13} />
+                <X size={12} />
               </button>
             )}
           </div>
         </div>
 
-        {/* Upload progress bar */}
-        {isUploading && (
-          <div style={{ width: "100%" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                fontSize: "0.68rem",
-                color: "#94a3b8",
-                marginBottom: "4px",
-              }}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <Loader size={11} style={{ animation: "spin 1s linear infinite" }} />
-                Calibrating raster...
-              </span>
-              <span style={{ color: accentColor, fontWeight: 700 }}>{progress}%</span>
-            </div>
-            <div
-              style={{
-                height: "4px",
-                background: "rgba(255,255,255,0.08)",
-                borderRadius: "4px",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: `${progress}%`,
-                  background: `linear-gradient(90deg, ${accentColor}, ${accentColor}cc)`,
-                  borderRadius: "4px",
-                  transition: "width 0.15s ease",
-                  boxShadow: `0 0 8px ${accentColor}80`,
-                }}
-              />
-            </div>
+        {/* Content */}
+        {isUploading ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.74rem", color: "var(--primary)", padding: "12px 0", justifyContent: "center" }}>
+            <Loader2 size={13} className="animate-spin" />
+            <span>Processing GeoTIFF...</span>
           </div>
-        )}
-
-        {/* Error state */}
-        {error && !isUploading && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "6px 8px",
-              background: "rgba(239,68,68,0.15)",
-              border: "1px solid rgba(239,68,68,0.35)",
-              borderRadius: "6px",
-              fontSize: "0.7rem",
-              color: "#fca5a5",
-            }}
-          >
-            <AlertTriangle size={12} />
-            <span>{error}</span>
+        ) : error ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#f87171", fontSize: "0.72rem" }}>
+            <AlertCircle size={12} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{error}</span>
           </div>
-        )}
-
-        {/* Metadata chips or dropzone */}
-        {meta && !isUploading ? (
+        ) : meta ? (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-              <CheckCircle size={12} color="#10b981" />
+            <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "4px" }}>
+              <CheckCircle size={12} color="var(--success)" />
               <span
                 style={{
-                  fontSize: "0.65rem",
-                  fontWeight: 800,
-                  padding: "1px 6px",
-                  borderRadius: "3px",
-                  background: accentBg,
-                  color: accentColor,
-                  border: `1px solid ${accentColor}60`,
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                {modality}
-              </span>
-              <span
-                style={{
-                  fontSize: "0.74rem",
-                  color: "#f1f5f9",
+                  fontSize: "0.73rem",
+                  color: "var(--text-main)",
                   fontWeight: 600,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  flex: 1,
                 }}
+                title={meta.filename}
               >
                 {meta.filename}
               </span>
             </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "4px",
-                fontSize: "0.68rem",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              {[
-                ["CRS", meta.crs],
-                ["GSD", `${meta.gsd_meters}m`],
-                ["Bands", `${meta.bands} (${meta.dtype})`],
-                ["Dim", `${meta.width}×${meta.height}`],
-              ].map(([k, v]) => (
-                <div
-                  key={k}
-                  style={{
-                    background: "rgba(20, 32, 56, 0.6)",
-                    padding: "3px 6px",
-                    borderRadius: "4px",
-                    color: "#94a3b8",
-                  }}
-                >
-                  {k}: <strong style={{ color: "#f8fafc" }}>{v}</strong>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "6px", fontSize: "0.68rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+              <span>{meta.gsd_meters}m</span>
+              <span>•</span>
+              <span>{meta.bands} bands</span>
+              <span>•</span>
+              <span>{meta.crs || "EPSG:32643"}</span>
             </div>
           </div>
-        ) : !isUploading && !error ? (
+        ) : (
           <div
             onClick={() => inputRef.current?.click()}
             style={{
-              minHeight: "68px",
+              padding: "8px 0",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              gap: "6px",
               cursor: "pointer",
-              color: "#64748b",
-              gap: "4px",
-              borderRadius: "6px",
-              transition: "all 0.2s ease",
+              color: "var(--text-muted)",
             }}
           >
-            <Upload size={16} color={isDragOver ? "#00f0ff" : "#475569"} />
-            <span style={{ fontSize: "0.72rem", color: isDragOver ? "#94a3b8" : "#94a3b8" }}>
-              {isDragOver ? "Drop to Ingest" : "Ingest Raster"}
-            </span>
-            <span style={{ fontSize: "0.62rem", color: "#475569" }}>GeoTIFF, TIFF, PNG</span>
+            <Upload size={13} />
+            <span style={{ fontSize: "0.74rem" }}>Upload GeoTIFF</span>
           </div>
-        ) : null}
+        )}
 
         <input
           ref={inputRef as any}
@@ -373,26 +232,20 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   return (
-    <div className="glass-panel" style={{ padding: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <Cpu size={15} color="#00f0ff" />
-          <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.03em", textTransform: "uppercase" }}>
-            Sensor Ingestion Console
-          </span>
-        </div>
-        <span style={{ fontSize: "0.65rem", color: "#64748b", fontFamily: "var(--font-mono)" }}>
-          Dual-Band Telemetry
-        </span>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {renderSlotCard("Primary Ingest (T1 / Base)", "SLOT-01", primaryMeta, primaryInputRef, true)}
-        {renderSlotCard("Secondary Ingest (T2 / Radar)", "SLOT-02", secondaryMeta, secondaryInputRef, false)}
-      </div>
+    <div
+      style={{
+        display: "flex",
+        gap: "10px",
+        background: "var(--bg-card)",
+        padding: "12px 14px",
+        borderRadius: "12px",
+        border: "1px solid var(--border-subtle)",
+      }}
+    >
+      {renderSlot("Primary Image", primaryMeta, primaryInputRef, true)}
+      {renderSlot("Secondary (T2 / SAR)", secondaryMeta, secondaryInputRef, false)}
     </div>
   );
 };
 
 export default ImageUploader;
-

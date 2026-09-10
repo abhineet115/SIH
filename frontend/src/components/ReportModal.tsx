@@ -43,8 +43,8 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(3, 7, 18, 0.8)',
-        backdropFilter: 'blur(8px)',
+        backgroundColor: 'rgba(3, 7, 18, 0.65)',
+        backdropFilter: 'blur(6px)',
         zIndex: 100,
         display: 'flex',
         alignItems: 'center',
@@ -53,34 +53,34 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       }}
     >
       <div
-        className="glass-panel"
+        className="clean-panel"
         style={{
           width: '100%',
-          maxWidth: '520px',
+          maxWidth: '500px',
           padding: '24px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6)'
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={20} color="#38bdf8" />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc' }}>
+            <FileText size={20} color="var(--primary)" />
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)' }}>
               Export Intelligence Dispatch
             </h3>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}>
             <X size={18} />
           </button>
         </div>
 
-        <p style={{ fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: '20px' }}>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>
           Download an official ISRO mission intelligence document containing the executive assessment, 4-signal confidence metrics, spatial coordinates, and the complete auditable execution trace.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {downloadUrl ? (
             <a
               href={downloadUrl}
@@ -109,7 +109,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             className="btn-secondary"
             style={{ justifyContent: 'center' }}
           >
-            {copiedJson ? <Check size={16} color="#10b981" /> : <Code size={16} />}
+            {copiedJson ? <Check size={16} color="var(--success)" /> : <Code size={16} />}
             {copiedJson ? "Copied Analysis JSON to Clipboard!" : "Copy Full Analysis JSON Payload"}
           </button>
         </div>

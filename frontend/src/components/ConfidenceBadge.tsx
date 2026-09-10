@@ -12,37 +12,37 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) 
   const { composite_score, rating, badge_color, breakdown } = confidence;
 
   const metrics = [
-    { label: "Model Certainty", code: "C_model", val: breakdown.model_inference, color: "#00f0ff" },
+    { label: "Model Certainty", code: "C_model", val: breakdown.model_inference, color: "var(--primary)" },
     { label: "Sensor Radiometry", code: "C_sensor", val: breakdown.sensor_radiometry, color: "#a855f7" },
     { label: "Spatial Alignment", code: "C_align", val: breakdown.spatial_alignment, color: "#10b981" },
-    { label: "GSD Suitability", code: "C_res", val: breakdown.resolution_suitability, color: "#f59e0b" },
+    { label: "Resolution Fit", code: "C_res", val: breakdown.resolution_suitability, color: "#f59e0b" },
   ];
 
   return (
     <div
-      className="glass-panel"
       style={{
-        padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
         gap: "10px",
-        background: "rgba(8, 14, 28, 0.85)",
-        border: "1px solid rgba(56, 189, 248, 0.2)",
+        background: "var(--bg-card)",
+        padding: "14px 16px",
+        borderRadius: "12px",
+        border: "1px solid var(--border-subtle)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <ShieldCheck size={16} color={badge_color} />
-          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.02em" }}>
-            Harmonic Composite Confidence
+          <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-main)" }}>
+            Composite Confidence
           </span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span
             style={{
-              fontSize: "1rem",
-              fontWeight: 800,
+              fontSize: "0.95rem",
+              fontWeight: 700,
               color: badge_color,
               fontFamily: "var(--font-mono)",
             }}
@@ -52,13 +52,12 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) 
           <span
             style={{
               fontSize: "0.65rem",
-              fontWeight: 800,
+              fontWeight: 700,
               padding: "2px 7px",
               borderRadius: "4px",
-              backgroundColor: `${badge_color}22`,
+              backgroundColor: `${badge_color}18`,
               color: badge_color,
-              border: `1px solid ${badge_color}55`,
-              letterSpacing: "0.04em",
+              border: `1px solid ${badge_color}40`,
             }}
           >
             {rating}
@@ -72,9 +71,9 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) 
           <div
             key={idx}
             style={{
-              background: "rgba(15, 23, 42, 0.65)",
-              border: "1px solid rgba(56, 189, 248, 0.1)",
-              padding: "6px 9px",
+              background: "var(--bg-card-subtle)",
+              border: "1px solid var(--border-subtle)",
+              padding: "6px 10px",
               borderRadius: "6px",
             }}
           >
@@ -82,22 +81,21 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) 
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                fontSize: "0.68rem",
-                color: "#94a3b8",
+                fontSize: "0.72rem",
+                color: "var(--text-muted)",
                 marginBottom: "4px",
               }}
             >
               <span>{m.label}</span>
-              <strong style={{ color: "#f1f5f9", fontFamily: "var(--font-mono)" }}>{m.val}%</strong>
+              <strong style={{ color: "var(--text-main)", fontFamily: "var(--font-mono)" }}>{m.val}%</strong>
             </div>
-            <div style={{ height: "4px", background: "rgba(30, 41, 59, 0.8)", borderRadius: "2px", overflow: "hidden" }}>
+            <div style={{ height: "4px", background: "rgba(255, 255, 255, 0.08)", borderRadius: "2px", overflow: "hidden" }}>
               <div
                 style={{
                   height: "100%",
                   width: `${m.val}%`,
                   backgroundColor: m.color,
                   borderRadius: "2px",
-                  boxShadow: `0 0 8px ${m.color}88`,
                   transition: "width 0.4s ease",
                 }}
               />
@@ -108,4 +106,3 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({ confidence }) 
     </div>
   );
 };
-

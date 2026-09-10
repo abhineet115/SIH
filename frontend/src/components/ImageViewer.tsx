@@ -2,14 +2,15 @@ import React, { useState, useRef, useCallback } from "react";
 import {
   Eye,
   EyeOff,
-  Compass,
   Move,
   ZoomIn,
   ZoomOut,
+  RotateCcw,
   Crosshair,
   Info,
   Sliders,
-  Check
+  Check,
+  Maximize2
 } from "lucide-react";
 import type { BoundingBox, ChangePolygon, FusionLayer, RasterMetadata } from "../types";
 
@@ -31,24 +32,20 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   changePolygons,
   fusionLayers,
 }) => {
-  const [sliderPos, setSliderPos] = useState<number>(50); // 0 to 100%
+  const [sliderPos, setSliderPos] = useState<number>(50);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showOverlays, setShowOverlays] = useState<boolean>(true);
   const [overlayOpacity, setOverlayOpacity] = useState<number>(0.85);
-  const [zoomLevel, setZoomLevel] = useState<number>(1); // 1x, 1.25x, 1.5x, 2x
-  const [showGrid, setShowGrid] = useState<boolean>(true);
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
-  // Layer filter toggles
   const [layerFilters, setLayerFilters] = useState({
     boxes: true,
     polygons: true,
     fusion: true,
   });
 
-  // Live cursor telemetry coordinates
   const [cursorGeo, setCursorGeo] = useState<{ lat: number; lon: number } | null>(null);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const isDualMode = Boolean(primaryPreview && secondaryPreview);
 
@@ -100,6 +97,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     setZoomLevel((prev) => Math.max(1, Math.min(2.5, Number((prev + delta).toFixed(2)))));
   };
 
+  const resetZoom = () => setZoomLevel(1);
+
   const activeBoxCount = layerFilters.boxes ? boundingBoxes.length : 0;
   const activePolyCount = layerFilters.polygons ? changePolygons.length : 0;
   const activeFusionCount = layerFilters.fusion ? fusionLayers.length : 0;
@@ -107,117 +106,132 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
   return (
     <div
-      className="glass-panel"
       style={{
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        minHeight: "520px",
+        minHeight: "480px",
         overflow: "hidden",
         position: "relative",
+        background: "var(--bg-card)",
+        borderRadius: "12px",
+        border: "1px solid var(--border-subtle)",
       }}
     >
-      {/* Top Tactical Command Toolbar */}
+      {/* Viewport Clean Header Toolbar */}
       <div
         style={{
-          padding: "8px 16px",
-          borderBottom: "1px solid rgba(56, 189, 248, 0.18)",
+          padding: "10px 16px",
+          borderBottom: "1px solid var(--border-subtle)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "rgba(8, 14, 28, 0.9)",
-          zIndex: 40,
+          background: "var(--bg-card)",
+          zIndex: 30,
         }}
       >
-        {/* Left: Viewport Mode & Active Target Count */}
+        {/* Left: View mode & targets count */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Compass size={17} color="#00f0ff" />
-          <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.02em" }}>
-            {isDualMode ? "Co-Registered Tactical Comparator" : "Geospatial Viewport"}
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)" }}>
+            {isDualMode ? "Before / After Split" : "Satellite View"}
           </span>
 
           {totalDetections > 0 && (
             <span
               style={{
-                fontSize: "0.68rem",
-                fontWeight: 700,
+                fontSize: "0.72rem",
+                fontWeight: 600,
                 padding: "2px 8px",
-                borderRadius: "4px",
-                background: "rgba(0, 240, 255, 0.15)",
-                color: "#00f0ff",
-                border: "1px solid rgba(0, 240, 255, 0.35)",
+                borderRadius: "999px",
+                background: "var(--primary-subtle)",
+                color: "var(--primary)",
+                border: "1px solid rgba(56, 189, 248, 0.2)",
               }}
             >
-              {totalDetections} Detected Spatial Targets
+              {totalDetections} {totalDetections === 1 ? "detection" : "detections"}
             </span>
           )}
 
           {isDualMode && (
             <span
               style={{
-                fontSize: "0.68rem",
+                fontSize: "0.72rem",
                 padding: "2px 8px",
                 borderRadius: "999px",
-                background: "rgba(255, 122, 0, 0.15)",
-                color: "#ff9a3c",
-                border: "1px solid rgba(255, 122, 0, 0.35)",
+                background: "rgba(245, 158, 11, 0.12)",
+                color: "#f59e0b",
                 fontFamily: "var(--font-mono)",
               }}
             >
-              Wipe: {Math.round(sliderPos)}%
+              Split: {Math.round(sliderPos)}%
             </span>
           )}
         </div>
 
-        {/* Right: Layer Filters, Opacity, & Zoom Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        {/* Right: Layer filters, opacity, & zoom controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* Layer Filter Toggles */}
           {boundingBoxes.length > 0 && (
             <button
               onClick={() => setLayerFilters((p) => ({ ...p, boxes: !p.boxes }))}
-              className={`btn-hud ${layerFilters.boxes ? "active" : ""}`}
+              className="btn-control"
+              style={{
+                background: layerFilters.boxes ? "var(--primary-subtle)" : "transparent",
+                color: layerFilters.boxes ? "var(--primary)" : "var(--text-muted)",
+                borderColor: layerFilters.boxes ? "rgba(56, 189, 248, 0.3)" : "var(--border-subtle)",
+              }}
               title="Toggle Bounding Boxes"
             >
-              <Check size={11} color={layerFilters.boxes ? "#00f0ff" : "#64748b"} />
-              BBoxes ({boundingBoxes.length})
+              <Check size={12} color={layerFilters.boxes ? "var(--primary)" : "var(--text-muted)"} />
+              Boxes ({boundingBoxes.length})
             </button>
           )}
 
           {changePolygons.length > 0 && (
             <button
               onClick={() => setLayerFilters((p) => ({ ...p, polygons: !p.polygons }))}
-              className={`btn-hud ${layerFilters.polygons ? "active" : ""}`}
+              className="btn-control"
+              style={{
+                background: layerFilters.polygons ? "rgba(239, 68, 68, 0.12)" : "transparent",
+                color: layerFilters.polygons ? "#f87171" : "var(--text-muted)",
+                borderColor: layerFilters.polygons ? "rgba(239, 68, 68, 0.3)" : "var(--border-subtle)",
+              }}
               title="Toggle Change Polygons"
             >
-              <Check size={11} color={layerFilters.polygons ? "#00f0ff" : "#64748b"} />
-              Polygons ({changePolygons.length})
+              <Check size={12} color={layerFilters.polygons ? "#f87171" : "var(--text-muted)"} />
+              Changes ({changePolygons.length})
             </button>
           )}
 
           {fusionLayers.length > 0 && (
             <button
               onClick={() => setLayerFilters((p) => ({ ...p, fusion: !p.fusion }))}
-              className={`btn-hud ${layerFilters.fusion ? "active" : ""}`}
-              title="Toggle Radar Fusion Masks"
+              className="btn-control"
+              style={{
+                background: layerFilters.fusion ? "rgba(168, 85, 247, 0.12)" : "transparent",
+                color: layerFilters.fusion ? "#c084fc" : "var(--text-muted)",
+                borderColor: layerFilters.fusion ? "rgba(168, 85, 247, 0.3)" : "var(--border-subtle)",
+              }}
+              title="Toggle Radar Fusion"
             >
-              <Check size={11} color={layerFilters.fusion ? "#00f0ff" : "#64748b"} />
-              SAR Masks ({fusionLayers.length})
+              <Check size={12} color={layerFilters.fusion ? "#c084fc" : "var(--text-muted)"} />
+              SAR ({fusionLayers.length})
             </button>
           )}
 
-          {/* Opacity Control Slider */}
+          {/* Opacity slider */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              padding: "3px 8px",
-              background: "rgba(15, 23, 42, 0.6)",
+              padding: "4px 8px",
+              background: "var(--bg-card-subtle)",
               borderRadius: "6px",
-              border: "1px solid rgba(56, 189, 248, 0.15)",
+              border: "1px solid var(--border-subtle)",
             }}
           >
-            <Sliders size={12} color="#94a3b8" />
+            <Sliders size={12} color="var(--text-muted)" />
             <input
               type="range"
               min="0.2"
@@ -225,7 +239,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               step="0.05"
               value={overlayOpacity}
               onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
-              style={{ width: "55px", accentColor: "#00f0ff", cursor: "pointer" }}
+              style={{ width: "48px", accentColor: "var(--primary)", cursor: "pointer" }}
               title={`Overlay Opacity: ${Math.round(overlayOpacity * 100)}%`}
             />
           </div>
@@ -234,15 +248,16 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
           <button
             onClick={() => setShowOverlays(!showOverlays)}
             className="btn-secondary"
-            style={{ padding: "4px 10px", fontSize: "0.74rem" }}
+            style={{ padding: "5px 10px", fontSize: "0.75rem" }}
+            title="Toggle All Overlays"
           >
-            {showOverlays ? <Eye size={13} color="#00f0ff" /> : <EyeOff size={13} color="#94a3b8" />}
-            {showOverlays ? "Overlays On" : "Overlays Off"}
+            {showOverlays ? <Eye size={13} color="var(--primary)" /> : <EyeOff size={13} color="var(--text-muted)" />}
+            {showOverlays ? "Annotations" : "Hidden"}
           </button>
         </div>
       </div>
 
-      {/* Main Tactical Canvas */}
+      {/* Main Image Canvas Area */}
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
@@ -255,14 +270,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         style={{
           flex: 1,
           position: "relative",
-          background: "#020612",
+          background: "#080c14",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: isDualMode ? (isDragging ? "ew-resize" : "crosshair") : "crosshair",
         }}
-        className={showGrid ? "gis-grid" : ""}
       >
         {primaryPreview ? (
           <div
@@ -272,13 +286,13 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               height: "100%",
               transform: `scale(${zoomLevel})`,
               transformOrigin: "center center",
-              transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: isDragging ? "none" : "transform 0.15s ease",
             }}
           >
-            {/* Primary Satellite Layer */}
+            {/* Primary Image Layer */}
             <img
               src={primaryPreview}
-              alt="Primary Raster"
+              alt="Primary Satellite Scene"
               style={{
                 width: "100%",
                 height: "100%",
@@ -289,7 +303,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               }}
             />
 
-            {/* Secondary Co-Registered Layer with Split-Wipe Polygon */}
+            {/* Secondary Co-Registered Layer with Split Polygon */}
             {isDualMode && secondaryPreview && (
               <div
                 style={{
@@ -304,7 +318,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               >
                 <img
                   src={secondaryPreview}
-                  alt="Secondary Raster"
+                  alt="Secondary Satellite Scene"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -315,7 +329,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               </div>
             )}
 
-            {/* Neon Split-Screen Wipe Handle */}
+            {/* Clean Split Divider Line & Handle */}
             {isDualMode && (
               <div
                 style={{
@@ -324,9 +338,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                   bottom: 0,
                   left: `${sliderPos}%`,
                   width: "2px",
-                  background: "#00f0ff",
-                  boxShadow: "0 0 16px #00f0ff, 0 0 30px rgba(0, 240, 255, 0.5)",
-                  zIndex: 35,
+                  background: "#ffffff",
+                  boxShadow: "0 0 8px rgba(0, 0, 0, 0.6)",
+                  zIndex: 25,
                   cursor: "ew-resize",
                 }}
               >
@@ -336,25 +350,25 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    width: "36px",
-                    height: "36px",
+                    width: "30px",
+                    height: "30px",
                     borderRadius: "50%",
-                    background: "rgba(4, 9, 22, 0.95)",
-                    border: "2px solid #00f0ff",
+                    background: "#0f172a",
+                    border: "2px solid #ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 0 20px rgba(0, 240, 255, 0.8)",
-                    color: "#00f0ff",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                    color: "#ffffff",
                     cursor: "ew-resize",
                   }}
                 >
-                  <Move size={16} />
+                  <Move size={14} />
                 </div>
               </div>
             )}
 
-            {/* Spatial Evidence Layer (Bounding Boxes, Polygons, SAR Fusion) */}
+            {/* Annotations & Detections Overlays */}
             {showOverlays && (
               <div
                 style={{
@@ -365,7 +379,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                   height: "100%",
                   pointerEvents: "auto",
                   opacity: overlayOpacity,
-                  zIndex: 25,
+                  zIndex: 20,
                 }}
               >
                 {/* 1. Visual Grounding Bounding Boxes */}
@@ -383,10 +397,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                           width: `${xmax - xmin}%`,
                           height: `${ymax - ymin}%`,
                           border: `2px solid ${b.color}`,
-                          backgroundColor: `${b.color}25`,
+                          backgroundColor: `${b.color}20`,
                           borderRadius: "4px",
                           cursor: "pointer",
-                          boxShadow: `0 0 14px ${b.color}77`,
                           transition: "all 0.15s ease",
                         }}
                         title={`${b.label} (${Math.round(b.confidence * 100)}%)`}
@@ -394,17 +407,16 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                         <span
                           style={{
                             position: "absolute",
-                            top: "-22px",
+                            top: "-20px",
                             left: "0",
                             backgroundColor: b.color,
-                            color: "#040916",
-                            fontSize: "0.66rem",
-                            fontWeight: 800,
-                            padding: "2px 7px",
+                            color: "#ffffff",
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            padding: "1px 6px",
                             borderRadius: "3px",
                             whiteSpace: "nowrap",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.7)",
-                            letterSpacing: "0.02em",
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
                           }}
                         >
                           {b.label} ({Math.round(b.confidence * 100)}%)
@@ -428,26 +440,25 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                           width: `${xmax - xmin}%`,
                           height: `${ymax - ymin}%`,
                           border: `2px dashed ${cp.color}`,
-                          backgroundColor: `${cp.color}28`,
-                          borderRadius: "6px",
+                          backgroundColor: `${cp.color}25`,
+                          borderRadius: "4px",
                           cursor: "pointer",
-                          boxShadow: `0 0 16px ${cp.color}66`,
                         }}
                         title={`${cp.label} (${cp.delta_area_sqkm > 0 ? "+" : ""}${cp.delta_area_sqkm} km²)`}
                       >
                         <span
                           style={{
                             position: "absolute",
-                            bottom: "-22px",
+                            bottom: "-20px",
                             left: "0",
                             backgroundColor: cp.color,
                             color: "#ffffff",
-                            fontSize: "0.66rem",
-                            fontWeight: 800,
-                            padding: "2px 7px",
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            padding: "1px 6px",
                             borderRadius: "3px",
                             whiteSpace: "nowrap",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.7)",
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
                           }}
                         >
                           {cp.category}: {cp.delta_area_sqkm > 0 ? `+${cp.delta_area_sqkm} km²` : `${cp.delta_area_sqkm} km²`}
@@ -456,7 +467,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                     );
                   })}
 
-                {/* 3. Optical + SAR Cross-Sensor Fusion Layers */}
+                {/* 3. Cross-Sensor Fusion Masks */}
                 {layerFilters.fusion &&
                   fusionLayers.map((fl) => {
                     const [ymin, xmin, ymax, xmax] = fl.box;
@@ -471,22 +482,21 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                           width: `${xmax - xmin}%`,
                           height: `${ymax - ymin}%`,
                           border: `2px solid ${fl.color}`,
-                          backgroundColor: `${fl.color}35`,
-                          borderRadius: "6px",
+                          backgroundColor: `${fl.color}30`,
+                          borderRadius: "4px",
                           cursor: "pointer",
-                          boxShadow: `0 0 16px ${fl.color}66`,
                         }}
                       >
                         <span
                           style={{
                             position: "absolute",
-                            top: "-22px",
+                            top: "-20px",
                             left: "0",
                             backgroundColor: fl.color,
                             color: "#ffffff",
-                            fontSize: "0.66rem",
-                            fontWeight: 800,
-                            padding: "2px 7px",
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            padding: "1px 6px",
                             borderRadius: "3px",
                             whiteSpace: "nowrap",
                           }}
@@ -500,112 +510,112 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             )}
           </div>
         ) : (
-          <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
-            <div className="standby-radar" style={{ margin: "0 auto 16px" }} />
-            <p style={{ fontSize: "0.95rem", color: "#e2e8f0", fontWeight: 600, marginBottom: "6px" }}>
-              Tactical Sensor Viewport Inactive
+          <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "40px" }}>
+            <Maximize2 size={32} color="var(--text-muted)" style={{ margin: "0 auto 12px", opacity: 0.5 }} />
+            <p style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: 600, marginBottom: "6px" }}>
+              No Satellite Scene Loaded
             </p>
-            <p style={{ fontSize: "0.78rem", color: "#64748b" }}>
-              Select a benchmark scenario from the top bar or load raster bands in the Telemetry Console.
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              Select a benchmark scenario from the top bar or load raster files.
             </p>
           </div>
         )}
 
-        {/* Floating Zoom & Grid Controls (Bottom Right of Viewport) */}
+        {/* Clean Zoom & Navigation Controls */}
         <div
           style={{
             position: "absolute",
-            bottom: "16px",
-            right: "16px",
+            bottom: "12px",
+            right: "12px",
             display: "flex",
             alignItems: "center",
-            gap: "6px",
-            background: "rgba(8, 14, 28, 0.85)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(56, 189, 248, 0.2)",
+            gap: "4px",
+            background: "rgba(17, 24, 39, 0.85)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid var(--border-subtle)",
             borderRadius: "8px",
-            padding: "4px",
-            zIndex: 30,
+            padding: "3px",
+            zIndex: 25,
           }}
         >
           <button
-            onClick={() => handleZoomChange(0.25)}
-            className="btn-hud"
-            style={{ padding: "4px 8px" }}
-            title="Zoom In"
-          >
-            <ZoomIn size={13} />
-          </button>
-          <span style={{ fontSize: "0.72rem", fontFamily: "var(--font-mono)", color: "#38bdf8", padding: "0 4px" }}>
-            {Math.round(zoomLevel * 100)}%
-          </span>
-          <button
             onClick={() => handleZoomChange(-0.25)}
-            className="btn-hud"
-            style={{ padding: "4px 8px" }}
+            className="btn-control"
+            style={{ padding: "4px 6px" }}
             title="Zoom Out"
           >
             <ZoomOut size={13} />
           </button>
+          <span style={{ fontSize: "0.72rem", fontFamily: "var(--font-mono)", color: "var(--text-main)", padding: "0 4px", minWidth: "36px", textAlign: "center" }}>
+            {Math.round(zoomLevel * 100)}%
+          </span>
           <button
-            onClick={() => setShowGrid(!showGrid)}
-            className={`btn-hud ${showGrid ? "active" : ""}`}
-            style={{ padding: "4px 8px" }}
-            title="Toggle GIS Coordinate Grid"
+            onClick={() => handleZoomChange(0.25)}
+            className="btn-control"
+            style={{ padding: "4px 6px" }}
+            title="Zoom In"
           >
-            <Crosshair size={13} />
+            <ZoomIn size={13} />
           </button>
+          {zoomLevel !== 1 && (
+            <button
+              onClick={resetZoom}
+              className="btn-control"
+              style={{ padding: "4px 6px" }}
+              title="Reset Zoom"
+            >
+              <RotateCcw size={12} />
+            </button>
+          )}
         </div>
 
-        {/* Floating Target Inspector Drawer */}
+        {/* Target Inspector Card */}
         {selectedItem && (
           <div
             style={{
               position: "absolute",
-              top: "16px",
-              left: "16px",
-              maxWidth: "340px",
-              background: "rgba(6, 12, 26, 0.95)",
-              backdropFilter: "blur(18px)",
-              border: `1px solid ${selectedItem.color || "#00f0ff"}`,
-              borderRadius: "10px",
-              padding: "12px 16px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0, 240, 255, 0.2)",
-              zIndex: 40,
+              top: "12px",
+              left: "12px",
+              maxWidth: "300px",
+              background: "var(--bg-card)",
+              border: `1px solid ${selectedItem.color || "var(--border-subtle)"}`,
+              borderRadius: "8px",
+              padding: "10px 14px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+              zIndex: 35,
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-              <div style={{ fontSize: "0.86rem", fontWeight: 800, color: "#f8fafc", display: "flex", alignItems: "center", gap: "6px" }}>
-                <Info size={14} color={selectedItem.color || "#00f0ff"} />
+              <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "var(--text-main)", display: "flex", alignItems: "center", gap: "6px" }}>
+                <Info size={14} color={selectedItem.color || "var(--primary)"} />
                 {selectedItem.label}
               </div>
               <button
                 onClick={() => setSelectedItem(null)}
                 style={{
-                  background: "rgba(255,255,255,0.1)",
+                  background: "transparent",
                   border: "none",
-                  color: "#cbd5e1",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  fontSize: "0.68rem",
+                  color: "var(--text-muted)",
+                  padding: "2px",
                   cursor: "pointer",
+                  fontSize: "0.75rem",
                 }}
               >
                 ✕
               </button>
             </div>
-            <div style={{ fontSize: "0.75rem", color: "#cbd5e1", lineHeight: 1.45, marginBottom: "8px" }}>
-              {selectedItem.details || selectedItem.description || selectedItem.notes || "Spatial localized target bounding geometry."}
+            <div style={{ fontSize: "0.76rem", color: "var(--text-muted)", lineHeight: 1.45, marginBottom: "8px" }}>
+              {selectedItem.details || selectedItem.description || selectedItem.notes || "Detected spatial feature."}
             </div>
             {selectedItem.confidence && (
-              <div style={{ fontSize: "0.7rem", color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
-                <span>Inference Certainty:</span>
-                <strong style={{ color: "#00f0ff" }}>{Math.round(selectedItem.confidence * 100)}%</strong>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+                <span>Confidence:</span>
+                <strong style={{ color: "var(--primary)" }}>{Math.round(selectedItem.confidence * 100)}%</strong>
               </div>
             )}
             {selectedItem.delta_area_sqkm && (
-              <div style={{ fontSize: "0.7rem", color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
-                <span>Spatial Area Impact:</span>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+                <span>Area Change:</span>
                 <strong style={{ color: selectedItem.color }}>
                   {selectedItem.delta_area_sqkm > 0 ? `+${selectedItem.delta_area_sqkm}` : selectedItem.delta_area_sqkm} km²
                 </strong>
@@ -618,49 +628,40 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
       {/* Coordinate & Sensor Reference Footer Bar */}
       <div
         style={{
-          padding: "7px 16px",
-          borderTop: "1px solid rgba(56, 189, 248, 0.15)",
-          background: "rgba(6, 11, 24, 0.95)",
+          padding: "6px 16px",
+          borderTop: "1px solid var(--border-subtle)",
+          background: "var(--bg-card)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          fontSize: "0.73rem",
-          color: "#94a3b8",
+          fontSize: "0.72rem",
+          color: "var(--text-muted)",
           fontFamily: "var(--font-mono)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <span>
-            CRS: <strong style={{ color: "#e2e8f0" }}>{primaryMeta?.crs || "EPSG:32643"}</strong>
+            CRS: <strong style={{ color: "var(--text-main)" }}>{primaryMeta?.crs || "EPSG:32643"}</strong>
           </span>
           <span>
-            Bounds:{" "}
-            <strong style={{ color: "#e2e8f0" }}>
-              {primaryMeta?.bounds?.west != null && primaryMeta?.bounds?.north != null
-                ? `${primaryMeta.bounds.west.toFixed(2)}°E, ${primaryMeta.bounds.north.toFixed(2)}°N`
-                : "77.10°E, 28.70°N"}
-            </strong>
-          </span>
-          <span>
-            GSD: <strong style={{ color: "#00f0ff" }}>{primaryMeta?.gsd_meters || 10}m/px</strong>
+            GSD: <strong style={{ color: "var(--primary)" }}>{primaryMeta?.gsd_meters || 10}m/px</strong>
           </span>
         </div>
 
-        {/* Live Cursor Telemetry Coordinates */}
+        {/* Live Cursor Coordinates */}
         <div>
           {cursorGeo ? (
-            <span style={{ color: "#00f0ff", display: "flex", alignItems: "center", gap: "6px" }}>
-              <Crosshair size={12} color="#00f0ff" />
+            <span style={{ color: "var(--text-main)", display: "flex", alignItems: "center", gap: "5px" }}>
+              <Crosshair size={12} color="var(--primary)" />
               <span>
-                Cursor: {cursorGeo.lon.toFixed(4)}°E, {cursorGeo.lat.toFixed(4)}°N
+                {cursorGeo.lon.toFixed(4)}°E, {cursorGeo.lat.toFixed(4)}°N
               </span>
             </span>
           ) : (
-            <span style={{ color: "#64748b" }}>Cursor over viewport to track Lat/Lon</span>
+            <span style={{ color: "var(--text-muted)" }}>Hover over image to view coordinates</span>
           )}
         </div>
       </div>
     </div>
   );
 };
-

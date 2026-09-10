@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Terminal, CornerDownLeft, Zap } from "lucide-react";
+import { Search, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 
 interface QueryBarProps {
   onRunQuery: (query: string) => void;
@@ -27,17 +27,17 @@ export const QueryBar: React.FC<QueryBarProps> = ({
 
   return (
     <div
-      className="glass-panel"
       style={{
-        padding: "14px 16px",
         display: "flex",
         flexDirection: "column",
         gap: "10px",
-        background: "rgba(8, 14, 28, 0.85)",
-        border: "1px solid rgba(0, 240, 255, 0.25)",
+        background: "var(--bg-card)",
+        padding: "14px 16px",
+        borderRadius: "12px",
+        border: "1px solid var(--border-subtle)",
       }}
     >
-      {/* Input Form */}
+      {/* Search Bar Input */}
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: "8px" }}>
         <div
           style={{
@@ -47,28 +47,29 @@ export const QueryBar: React.FC<QueryBarProps> = ({
             alignItems: "center",
           }}
         >
-          <Terminal
+          <Search
             size={16}
-            color="#00f0ff"
+            color="var(--text-muted)"
             style={{ position: "absolute", left: "12px", pointerEvents: "none" }}
           />
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Ask SatQuery Agent (e.g., 'Highlight runway corridors' or 'Detect urban expansion')..."
+            placeholder="Ask a question about this satellite scene..."
             style={{
               width: "100%",
-              padding: "11px 12px 11px 38px",
+              padding: "10px 12px 10px 38px",
               borderRadius: "8px",
-              border: "1px solid rgba(56, 189, 248, 0.3)",
-              background: "rgba(4, 9, 22, 0.9)",
-              color: "#f8fafc",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--bg-main)",
+              color: "var(--text-main)",
               fontSize: "0.85rem",
               outline: "none",
-              transition: "all 0.2s ease",
-              fontFamily: "var(--font-sans)",
+              transition: "border-color 0.15s ease",
             }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border-subtle)")}
           />
         </div>
 
@@ -80,17 +81,13 @@ export const QueryBar: React.FC<QueryBarProps> = ({
         >
           {isLoading ? (
             <>
-              <span
-                className="pulse-indicator"
-                style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#ffffff" }}
-              />
-              Routing...
+              <Loader2 size={14} className="animate-spin" />
+              <span>Analyzing...</span>
             </>
           ) : (
             <>
-              <Zap size={14} />
-              Execute
-              <CornerDownLeft size={11} style={{ opacity: 0.6 }} />
+              <span>Ask</span>
+              <ArrowRight size={14} />
             </>
           )}
         </button>
@@ -99,9 +96,9 @@ export const QueryBar: React.FC<QueryBarProps> = ({
       {/* Suggested Prompt Chips */}
       {suggestedQueries.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.7rem", color: "#64748b" }}>
-            <Sparkles size={11} color="#f59e0b" />
-            <span>Preset Chips:</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.72rem", color: "var(--text-muted)" }}>
+            <Sparkles size={12} color="#f59e0b" />
+            <span>Try:</span>
           </div>
 
           {suggestedQueries.map((sq, idx) => (
@@ -110,26 +107,23 @@ export const QueryBar: React.FC<QueryBarProps> = ({
               onClick={() => handleChipClick(sq)}
               disabled={isLoading}
               style={{
-                background: "rgba(15, 23, 42, 0.7)",
-                border: "1px solid rgba(56, 189, 248, 0.2)",
+                background: "var(--bg-card-subtle)",
+                border: "1px solid var(--border-subtle)",
                 borderRadius: "999px",
                 padding: "3px 10px",
-                fontSize: "0.72rem",
-                color: "#cbd5e1",
+                fontSize: "0.73rem",
+                color: "var(--text-muted)",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 whiteSpace: "nowrap",
-                fontFamily: "var(--font-sans)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#00f0ff";
-                e.currentTarget.style.color = "#00f0ff";
-                e.currentTarget.style.boxShadow = "0 0 10px rgba(0,240,255,0.2)";
+                e.currentTarget.style.borderColor = "var(--primary)";
+                e.currentTarget.style.color = "var(--text-main)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.2)";
-                e.currentTarget.style.color = "#cbd5e1";
-                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.borderColor = "var(--border-subtle)";
+                e.currentTarget.style.color = "var(--text-muted)";
               }}
             >
               {sq}
@@ -140,4 +134,3 @@ export const QueryBar: React.FC<QueryBarProps> = ({
     </div>
   );
 };
-
