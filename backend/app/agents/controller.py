@@ -128,18 +128,28 @@ class AgenticController:
         if COLAB_API_URL:
             try:
                 import requests
-                with open(primary_path, 'rb') as f:
-                    req_files = {'file': (Path(primary_path).name, f, 'image/jpeg')}
-                    req_data = {'query': query, 'intent': intent}
-                    endpoint = f"{COLAB_API_URL.rstrip('/')}/api/qwen"
-                    api_resp = requests.post(endpoint, files=req_files, data=req_data, timeout=8)
-                    if api_resp.status_code == 200:
-                        json_resp = api_resp.json()
-                        colab_ans = json_resp.get("answer")
-                        if colab_ans:
-                            result_payload["answer"] = colab_ans
-                            result_payload["model_source"] = "colab_live_vlm"
-                        specialist_name = f"Colab Live GPU ({specialist_name})"
+                import io
+                from PIL import Image
+
+                # Compress and resize to fast JPEG buffer for rapid tunnel transport
+                c_img = Image.open(primary_path).convert("RGB")
+                c_img.thumbnail((768, 768))
+                buf = io.BytesIO()
+                c_img.save(buf, format="JPEG", quality=85)
+                buf.seek(0)
+
+                req_files = {'file': ('image.jpg', buf, 'image/jpeg')}
+                req_data = {'query': query, 'intent': intent}
+                endpoint = f"{COLAB_API_URL.rstrip('/')}/api/qwen"
+                headers = {"bypass-tunnel-reminder": "true", "User-Agent": "SatQueryClient/1.0"}
+                api_resp = requests.post(endpoint, files=req_files, data=req_data, headers=headers, timeout=25)
+                if api_resp.status_code == 200:
+                    json_resp = api_resp.json()
+                    colab_ans = json_resp.get("answer")
+                    if colab_ans:
+                        result_payload["answer"] = colab_ans
+                        result_payload["model_source"] = "colab_live_vlm"
+                    specialist_name = f"Colab Live GPU ({specialist_name})"
             except Exception as e:
                 # Fallback cleanly to high-accuracy local specialist findings
                 pass
