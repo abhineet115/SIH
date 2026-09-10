@@ -103,14 +103,33 @@ try:
 except Exception:
     public_ip = "Unknown"
 
+# 1. Start Uvicorn in background thread (avoids Jupyter asyncio event loop conflicts)
+import threading
+import subprocess
+import time
+
+def start_api():
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
+
+threading.Thread(target=start_api, daemon=True).start()
+time.sleep(2)
+
 print("\n" + "=" * 65)
 print("🔑 Localtunnel Password (IP):", public_ip)
-print("👉 Paste this IP if prompted by the Localtunnel webpage.")
-print("👉 Copy the public URL generated below and put it in backend/.env:")
-print("   COLAB_API_URL=https://xxxx.loca.lt")
+print("👉 If prompted with 'Friendly Reminder' by Localtunnel, enter this IP.")
 print("=" * 65 + "\n")
 
-# Run FastAPI and expose it to internet
-# In Colab notebook, execute:
-# !lt --port 8000 &
-# uvicorn.run(app, host="0.0.0.0", port=8000)
+# 2. Start localtunnel and display the live public URL
+print("Starting public tunnel...")
+lt_proc = subprocess.Popen(["npx", "localtunnel", "--port", "8000"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+for line in lt_proc.stdout:
+    if "your url is:" in line.lower():
+        tunnel_url = line.strip().split()[-1]
+        print("\n" + "=" * 65)
+        print("🚀 LIVE API ENDPOINT READY!")
+        print(f"👉 COLAB_API_URL={tunnel_url}")
+        print("👉 Copy and paste the line below into your local backend/.env file:")
+        print(f"   COLAB_API_URL={tunnel_url}")
+        print("=" * 65 + "\n")
+        break
