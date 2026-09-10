@@ -11,8 +11,7 @@
 
 # %% [code]
 # Step 1: Install dependencies (run once in Colab)
-# !pip install -q torch torchvision transformers==4.49.0 peft==0.14.0 bitsandbytes==0.45.2 accelerate==1.4.0
-# !pip install -q qwen-vl-utils fastapi uvicorn python-multipart nest-asyncio
+# !pip install -q transformers>=4.45.0 accelerate>=0.30.0 qwen-vl-utils fastapi uvicorn python-multipart nest-asyncio
 # !npm install -g localtunnel
 
 import nest_asyncio
@@ -20,7 +19,7 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import torch
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 from PIL import Image
 import io
@@ -39,19 +38,12 @@ app.add_middleware(
 )
 
 MODEL_ID = os.getenv("MODEL_ID", "Qwen/Qwen2-VL-2B-Instruct")
-print(f"[1/3] Loading Vision-Language Model '{MODEL_ID}' with 4-bit QLoRA on Colab GPU...")
-
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16,
-)
+print(f"[1/3] Loading Vision-Language Model '{MODEL_ID}' (FP16 on Colab GPU, ~4.4GB VRAM)...")
 
 model = Qwen2VLForConditionalGeneration.from_pretrained(
     MODEL_ID,
-    quantization_config=bnb_config,
+    torch_dtype=torch.float16,
     device_map="auto",
-    torch_dtype=torch.bfloat16,
 )
 processor = AutoProcessor.from_pretrained(MODEL_ID)
 print("[2/3] Model & Processor successfully initialized in Colab VRAM!")
