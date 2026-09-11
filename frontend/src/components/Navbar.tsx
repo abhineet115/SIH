@@ -1,5 +1,5 @@
 import React from "react";
-import { Satellite, Download, Sun, Moon } from "lucide-react";
+import { Satellite, Download, Sun, Moon, Sparkles } from "lucide-react";
 import type { SampleScenario } from "../types";
 
 interface NavbarProps {
@@ -11,6 +11,8 @@ interface NavbarProps {
   backendOnline: boolean;
   theme: "dark" | "light";
   onToggleTheme: () => void;
+  onOpenGeminiSettings: () => void;
+  hasGeminiKey: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,6 +24,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   backendOnline,
   theme,
   onToggleTheme,
+  onOpenGeminiSettings,
+  hasGeminiKey,
 }) => {
   return (
     <header
@@ -133,6 +137,27 @@ export const Navbar: React.FC<NavbarProps> = ({
           />
           <span>{backendOnline ? "Online" : "Offline"}</span>
         </div>
+
+        {/* Gemini AI Settings Button */}
+        <button
+          onClick={onOpenGeminiSettings}
+          className="btn-secondary"
+          style={{
+            padding: "6px 12px",
+            fontSize: "0.75rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            background: hasGeminiKey ? "rgba(168, 85, 247, 0.12)" : "var(--bg-card-subtle)",
+            borderColor: hasGeminiKey ? "rgba(168, 85, 247, 0.35)" : "var(--border-subtle)",
+            color: hasGeminiKey ? "#c084fc" : "var(--text-muted)",
+          }}
+          title="Configure Google Gemini AI & Models"
+          id="gemini-settings-btn"
+        >
+          <Sparkles size={13} color={hasGeminiKey ? "#c084fc" : "#f59e0b"} />
+          <span style={{ fontWeight: 600 }}>{hasGeminiKey ? "Gemini Active" : "Gemini AI"}</span>
+        </button>
 
         {/* Theme Toggle Button */}
         <button

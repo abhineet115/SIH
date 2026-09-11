@@ -35,7 +35,10 @@ export async function uploadRasterFile(file: File): Promise<{
 export async function runAgenticQuery(
   primaryPath: string,
   secondaryPath: string | null,
-  query: string
+  query: string,
+  explanationMode: string = "simple",
+  geminiApiKey?: string,
+  geminiModel?: string
 ): Promise<AnalysisResult> {
   const resp = await fetch(`${API_BASE}/query`, {
     method: "POST",
@@ -44,6 +47,9 @@ export async function runAgenticQuery(
       primary_path: primaryPath,
       secondary_path: secondaryPath,
       query: query,
+      explanation_mode: explanationMode,
+      gemini_api_key: geminiApiKey,
+      gemini_model: geminiModel,
     }),
   });
 
@@ -54,6 +60,37 @@ export async function runAgenticQuery(
 
   const data = await resp.json();
   return data.data;
+}
+
+export async function fetchGeminiStatus(): Promise<{
+  configured: boolean;
+  default_model: string;
+  masked_key: string;
+  features: string[];
+}> {
+  const resp = await fetch(`${API_BASE}/gemini/status`);
+  if (!resp.ok) {
+    throw new Error("Failed to fetch Gemini status");
+  }
+  return await resp.json();
+}
+
+export async function testGeminiConnection(
+  apiKey?: string,
+  modelName?: string
+): Promise<{ valid: boolean; message: string; model?: string }> {
+  const resp = await fetch(`${API_BASE}/gemini/test`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: apiKey,
+      model_name: modelName,
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error("Failed to test Gemini connection");
+  }
+  return await resp.json();
 }
 
 export async function exportPDFReport(

@@ -7,6 +7,7 @@ import { ResultCard } from "./components/ResultCard";
 import { ConfidenceBadge } from "./components/ConfidenceBadge";
 import { ExecutionTraceView } from "./components/ExecutionTraceView";
 import { ReportModal } from "./components/ReportModal";
+import { GeminiSettingsModal } from "./components/GeminiSettingsModal";
 import { useToast } from "./components/Toast";
 import type { SampleScenario, RasterMetadata, AnalysisResult } from "./types";
 import { fetchSampleScenarios, runAgenticQuery } from "./services/api";
@@ -23,6 +24,16 @@ export function App() {
     return (saved === "light" || saved === "dark") ? saved : "dark";
   });
 
+  // Gemini AI state
+  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState<boolean>(false);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
+    return localStorage.getItem("satquery_gemini_key") || "";
+  });
+  const [geminiModel, setGeminiModel] = useState<string>(() => {
+    return localStorage.getItem("satquery_gemini_model") || "gemini-2.5-flash";
+  });
+  const [explanationMode, setExplanationMode] = useState<string>("simple");
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("satquery_theme", theme);
@@ -30,6 +41,14 @@ export function App() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const handleSaveGeminiSettings = (key: string, model: string) => {
+    setGeminiApiKey(key);
+    setGeminiModel(model);
+    localStorage.setItem("satquery_gemini_key", key);
+    localStorage.setItem("satquery_gemini_model", model);
+    addToast(key ? `Gemini API key configured (${model})` : "Using Smart Offline Generalizer", "success");
   };
 
   // Raster state
@@ -86,9 +105,15 @@ export function App() {
     handleRunQuery(sc.default_query, sc.primary_path, sc.secondary_path);
   };
 
-  const handleRunQuery = async (queryText: string, pPath?: string | null, sPath?: string | null) => {
+  const handleRunQuery = async (
+    queryText: string,
+    pPath?: string | null,
+    sPath?: string | null,
+    mode?: string
+  ) => {
     const activeP = pPath !== undefined ? pPath : primaryPath;
     const activeS = sPath !== undefined ? sPath : secondaryPath;
+    const activeMode = mode || explanationMode;
 
     if (!activeP) {
       addToast("Please select a scenario or upload a satellite image.", "info");
@@ -97,7 +122,14 @@ export function App() {
 
     try {
       setIsLoading(true);
-      const res = await runAgenticQuery(activeP, activeS, queryText);
+      const res = await runAgenticQuery(
+        activeP,
+        activeS,
+        queryText,
+        activeMode,
+        geminiApiKey.trim() || undefined,
+        geminiModel
+      );
       setResult(res);
       setBackendOnline(true);
     } catch (err: any) {
@@ -130,7 +162,7 @@ export function App() {
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--bg-main)" }}>
-      {/* Clean Header with Scenario Switcher and Theme Toggle */}
+      {/* Clean Header with Scenario Switcher, Gemini AI Settings, and Theme Toggle */}
       <Navbar
         scenarios={scenarios}
         currentScenario={currentScenario}
@@ -140,6 +172,8 @@ export function App() {
         backendOnline={backendOnline}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onOpenGeminiSettings={() => setIsGeminiModalOpen(true)}
+        hasGeminiKey={Boolean(geminiApiKey.trim())}
       />
 
       {/* Main 2-Pane Workstation */}
@@ -195,17 +229,23 @@ export function App() {
           {/* Query Bar */}
           <div style={{ flexShrink: 0 }}>
             <QueryBar
-              onRunQuery={(q) => handleRunQuery(q)}
+              onRunQuery={(q, m) => handleRunQuery(q, undefined, undefined, m)}
               isLoading={isLoading}
               suggestedQueries={currentScenario?.suggested_queries || []}
+              explanationMode={explanationMode}
+              onChangeExplanationMode={setExplanationMode}
             />
           </div>
 
           {/* Results Area */}
           {result ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {/* Executive Assessment */}
-              <ResultCard result={result} />
+              {/* Executive & Simplified Assessment */}
+              <ResultCard
+                result={result}
+                onRunQuery={(q) => handleRunQuery(q)}
+                isLoading={isLoading}
+              />
 
               {/* Collapsible Technical Details (Confidence & DAG Trace) */}
               <div
@@ -285,6 +325,15 @@ export function App() {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         result={result}
+      />
+
+      {/* Google Gemini AI Configuration Modal */}
+      <GeminiSettingsModal
+        isOpen={isGeminiModalOpen}
+        onClose={() => setIsGeminiModalOpen(false)}
+        apiKey={geminiApiKey}
+        currentModel={geminiModel}
+        onSaveKey={handleSaveGeminiSettings}
       />
     </div>
   );

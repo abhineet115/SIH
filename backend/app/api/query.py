@@ -15,6 +15,67 @@ class QueryRequest(BaseModel):
     query: str
     primary_path: str
     secondary_path: Optional[str] = None
+    explanation_mode: Optional[str] = "simple"
+    gemini_api_key: Optional[str] = None
+    gemini_model: Optional[str] = None
+
+class GeminiCheckRequest(BaseModel):
+    api_key: Optional[str] = None
+    model_name: Optional[str] = None
+
+@router.get("/gemini/status")
+def get_gemini_status():
+    from app.config import GEMINI_API_KEY, GEMINI_MODEL
+    has_key = bool(GEMINI_API_KEY and GEMINI_API_KEY.strip())
+    return {
+        "configured": has_key,
+        "default_model": GEMINI_MODEL or "gemini-2.5-flash",
+        "masked_key": f"{GEMINI_API_KEY[:4]}...{GEMINI_API_KEY[-4:]}" if has_key and len(GEMINI_API_KEY) > 8 else ("Configured" if has_key else "Not Configured"),
+        "features": [
+            "Plain-English Remote Sensing Summaries",
+            "Real-World Impact Breakdown",
+            "Actionable Recommendations",
+            "Dynamic Follow-Up Questions"
+        ]
+    }
+
+@router.post("/gemini/test")
+def test_gemini_key(req: GeminiCheckRequest):
+    import os
+    import requests
+    from app.config import GEMINI_API_KEY, GEMINI_MODEL
+
+    key = req.api_key or os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY
+    if not key or not key.strip():
+        return {
+            "valid": False,
+            "message": "No API key provided. Using Smart Local Synthesizer."
+        }
+
+    model = req.model_name or os.getenv("GEMINI_MODEL") or GEMINI_MODEL or "gemini-2.5-flash"
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key.strip()}"
+        payload = {
+            "contents": [{"parts": [{"text": "Reply with 'OK'."}]}]
+        }
+        r = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=8)
+        if r.status_code == 200:
+            return {
+                "valid": True,
+                "model": model,
+                "message": f"Successfully connected to Google Gemini ({model})!"
+            }
+        else:
+            return {
+                "valid": False,
+                "status_code": r.status_code,
+                "message": f"Gemini error: {r.text[:200]}"
+            }
+    except Exception as e:
+        return {
+            "valid": False,
+            "message": f"Connection test failed: {str(e)}"
+        }
 
 @router.post("/query")
 def execute_query(req: QueryRequest, db: Session = Depends(get_db)):
@@ -27,7 +88,10 @@ def execute_query(req: QueryRequest, db: Session = Depends(get_db)):
         result = AgenticController.process_query(
             primary_path=req.primary_path,
             secondary_path=req.secondary_path,
-            query=req.query
+            query=req.query,
+            explanation_mode=req.explanation_mode or "simple",
+            gemini_api_key=req.gemini_api_key,
+            gemini_model=req.gemini_model
         )
 
         # Persist analysis to Database

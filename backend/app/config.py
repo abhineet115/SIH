@@ -41,3 +41,8 @@ DEFAULT_CRS = "EPSG:32643"  # WGS 84 / UTM zone 43N
 
 # Colab Bridge (Optional live GPU endpoint, defaults to None for fast local specialist execution)
 COLAB_API_URL = os.getenv("COLAB_API_URL", None)
+
+# Google Gemini API Settings for Plain-English Explanation & Summarization
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+

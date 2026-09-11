@@ -11,19 +11,23 @@ from app.models.grounding_engine import GroundingEngine
 from app.models.change_engine import ChangeDetectionEngine
 from app.models.optical_sar_engine import OpticalSARFusionEngine
 from app.fusion.confidence import CompositeConfidenceEngine
+from app.models.gemini_explainer import GeminiExplainer
 
 class AgenticController:
     """
     Core Agentic Orchestrator for SatQuery AI.
     Executes the dynamic multi-step decision cycle:
-    Preprocess -> Inspect -> Align -> Plan -> Execute Specialist -> Fuse Evidence -> Trace
+    Preprocess -> Inspect -> Align -> Plan -> Execute Specialist -> Fuse Evidence -> Trace -> Gemini Generalization
     """
 
     @staticmethod
     def process_query(
         primary_path: str | Path,
         secondary_path: Optional[str | Path] = None,
-        query: str = "Analyze this remote sensing scene"
+        query: str = "Analyze this remote sensing scene",
+        explanation_mode: str = "simple",
+        gemini_api_key: Optional[str] = None,
+        gemini_model: Optional[str] = None
     ) -> Dict[str, Any]:
         trace: List[Dict[str, Any]] = []
         start_time = time.time()
@@ -183,6 +187,30 @@ class AgenticController:
             "details": f"Final Composite Confidence: {confidence_result['composite_score']}% ({confidence_result['rating']})."
         })
 
+        # Step 6: Gemini Multimodal Simplification & Plain-English Generalization
+        step6_start = time.time()
+        generalized_res = GeminiExplainer.synthesize_explanation(
+            query=query,
+            intent=intent,
+            specialist_result=result_payload,
+            primary_metadata=primary_meta,
+            image_path=primary_path,
+            explanation_mode=explanation_mode,
+            api_key=gemini_api_key,
+            model_name=gemini_model
+        )
+        step6_dur = round((time.time() - step6_start) * 1000, 1)
+
+        explainer_tool = f"Gemini ({generalized_res.get('model_used', 'Gemini')})" if generalized_res.get("powered_by_gemini") else "Smart Explainer"
+        trace.append({
+            "step": len(trace) + 1,
+            "action": "Plain-English Simplification & Insight Synthesis",
+            "tool": explainer_tool,
+            "status": "COMPLETED",
+            "latency_ms": step6_dur,
+            "details": f"Synthesized easy-to-understand summary with {len(generalized_res.get('what_this_means', []))} impact takeaways and {len(generalized_res.get('follow_up_questions', []))} follow-up recommendations."
+        })
+
         total_latency_ms = round((time.time() - start_time) * 1000, 1)
 
         # Assemble unified response contract
@@ -202,6 +230,7 @@ class AgenticController:
             "primary_metadata": primary_meta,
             "secondary_metadata": secondary_meta,
             "registration": reg_info,
+            "generalized_result": generalized_res,
             "execution_trace": trace,
             "total_latency_ms": total_latency_ms
         }

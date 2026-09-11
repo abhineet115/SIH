@@ -97,6 +97,17 @@ export interface SpatialRegistration {
   status_message: string;
 }
 
+export interface GeneralizedResult {
+  simple_summary: string;
+  what_this_means: string[];
+  actionable_recommendations: string[];
+  executive_verdict: string;
+  follow_up_questions: string[];
+  powered_by_gemini: boolean;
+  model_used?: string;
+  explanation_mode: "simple" | "executive" | "technical";
+}
+
 export interface AnalysisResult {
   query: string;
   intent: "VQA" | "GROUNDING" | "CHANGE_DETECTION" | "OPTICAL_SAR_FUSION" | "CAPTION";
@@ -113,6 +124,7 @@ export interface AnalysisResult {
   primary_metadata: RasterMetadata;
   secondary_metadata?: RasterMetadata;
   registration?: SpatialRegistration;
+  generalized_result?: GeneralizedResult;
   execution_trace: ExecutionTraceStep[];
   total_latency_ms: number;
 }
