@@ -11,8 +11,10 @@ import {
   Compass,
   FileText,
   Sliders,
+  TerminalSquare,
 } from "lucide-react";
 import type { AnalysisResult } from "../types";
+import { ExecutionTraceView } from "./ExecutionTraceView";
 
 interface ResultCardProps {
   result: AnalysisResult | null;
@@ -24,6 +26,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onRunQuery, isLo
   if (!result) return null;
 
   const [activeTab, setActiveTab] = useState<"simple" | "technical">("simple");
+  const [showTrace, setShowTrace] = useState(false);
 
   const {
     answer,
@@ -654,6 +657,46 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onRunQuery, isLo
           </div>
         </div>
       )}
+
+      {/* ISRO Tactical Trace Toggle */}
+      <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "12px", marginTop: "4px" }}>
+        <button
+          type="button"
+          onClick={() => setShowTrace(!showTrace)}
+          style={{
+            width: "100%",
+            background: showTrace ? "linear-gradient(90deg, rgba(6,182,212,0.15) 0%, rgba(59,130,246,0.15) 100%)" : "var(--bg-card-subtle)",
+            border: showTrace ? "1px solid rgba(6,182,212,0.4)" : "1px solid var(--border-subtle)",
+            borderRadius: "6px",
+            padding: "8px",
+            color: showTrace ? "#06b6d4" : "var(--text-muted)",
+            fontSize: "0.75rem",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "all 0.2s",
+            fontFamily: "var(--font-mono)",
+            boxShadow: showTrace ? "0 0 10px rgba(6,182,212,0.2) inset" : "none"
+          }}
+        >
+          <TerminalSquare size={14} />
+          {showTrace ? "HIDE AGENTIC PIPELINE TRACE" : "VIEW AGENTIC PIPELINE TRACE [ISRO MODE]"}
+        </button>
+        
+        {showTrace && (
+          <div style={{ marginTop: "12px" }}>
+            <ExecutionTraceView 
+              trace={result.execution_trace} 
+              totalLatencyMs={result.total_latency_ms} 
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
