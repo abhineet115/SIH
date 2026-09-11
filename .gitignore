@@ -1,50 +1,18 @@
-# Byte-compiled / optimized / DLL files
+# Environments & Secrets (Strictly ignored)
+.env
+.env.*
+!.env.example
+
+# Byte-compiled & cache files
 __pycache__/
 *.py[cod]
-*$py.class
+frontend/dist/
+frontend/node_modules/
 
 # Environments
-.env
-.venv
+.venv/
 env/
 venv/
-ENV/
 
-# IDE / OS files
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-
-# Databases & local state
-*.db
-*.sqlite
-*.sqlite3
-backend/data/satquery.db
-
-# Uploads & generated outputs
-backend/data/uploads/*
-!backend/data/uploads/.gitkeep
-backend/data/reports/*
-!backend/data/reports/.gitkeep
-backend/data/real_satellite_scenes/*
-!backend/data/real_satellite_scenes/.gitkeep
-
-# Large satellite imagery (>100MB - exceeds GitHub limit)
-*.tif
-*.tiff
-*.geotiff
-!backend/data/sample_images/*.tif
-!backend/data/sample_images/*.tiff
-
-# ML model weights (large binary files)
-*.safetensors
-*.pt
-*.pth
-*.bin
-*.gguf
-backend/weights/**/*.safetensors
-backend/weights/**/*.pt
-backend/weights/**/*.pth
-backend/weights/**/*.bin
-backend/weights/**/*.gguf
+# Large files exceeding GitHub's 100MB limit (GitHub rejects files > 100MB)
+*delhi_sentinel2_2024-04-23_tci.tif
