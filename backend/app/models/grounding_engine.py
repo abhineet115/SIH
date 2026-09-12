@@ -95,7 +95,8 @@ class GroundingEngine:
 
         # Target 5: General Salient Feature / Anomaly
         else:
-            entity_name = f"Detected Feature ({target_query})"
+            short_query = target_query if len(target_query) <= 20 else target_query[:17] + "..."
+            entity_name = f"Salient Feature ({short_query})"
             dev = np.abs(brightness - np.mean(brightness))
             mask = dev > np.percentile(dev, 85)
             color = "#8b5cf6"  # Violet

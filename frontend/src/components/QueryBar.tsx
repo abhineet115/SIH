@@ -79,14 +79,12 @@ export const QueryBar: React.FC<QueryBarProps> = ({
 
   return (
     <div
+      className="clean-panel"
       style={{
         display: "flex",
         flexDirection: "column",
         gap: "10px",
-        background: "var(--bg-card)",
         padding: "14px 16px",
-        borderRadius: "12px",
-        border: "1px solid var(--border-subtle)",
       }}
     >
       {/* Quick Analysis Category Pills */}

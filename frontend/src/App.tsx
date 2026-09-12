@@ -12,6 +12,8 @@ import { useToast } from "./components/Toast";
 import type { SampleScenario, RasterMetadata, AnalysisResult } from "./types";
 import { fetchSampleScenarios, runAgenticQuery } from "./services/api";
 import { ChevronDown, ChevronRight, SlidersHorizontal, MessageSquare } from "lucide-react";
+import { SplashSequence } from "./components/SplashSequence";
+import { AnimatedStarfield } from "./components/AnimatedStarfield";
 
 export function App() {
   const { addToast } = useToast();
@@ -167,8 +169,16 @@ export function App() {
     handleClearSecondary();
   };
 
+  const [booted, setBooted] = useState(false);
+
+  if (!booted) {
+    return <SplashSequence onComplete={() => setBooted(true)} />;
+  }
+
   return (
-    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--bg-main)" }}>
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "transparent" }}>
+      <AnimatedStarfield />
+      
       {/* Clean Header with Scenario Switcher, Gemini AI Settings, and Theme Toggle */}
       <Navbar
         scenarios={scenarios}
@@ -298,6 +308,7 @@ export function App() {
             </div>
           ) : (
             <div
+              className="clean-panel pulse-panel-glow"
               style={{
                 flex: 1,
                 display: "flex",
@@ -305,9 +316,6 @@ export function App() {
                 alignItems: "center",
                 justifyContent: "center",
                 minHeight: "220px",
-                borderRadius: "12px",
-                border: "1px dashed var(--border-subtle)",
-                background: "var(--bg-card)",
                 padding: "24px",
                 textAlign: "center",
                 gap: "8px",

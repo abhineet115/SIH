@@ -28,10 +28,32 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   primaryPreview,
   secondaryPreview,
   primaryMeta,
+  secondaryMeta,
   boundingBoxes,
   changePolygons,
   fusionLayers,
 }) => {
+  // 3D Parallax Tilt State
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const tiltContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!tiltContainerRef.current) return;
+    const rect = tiltContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - (rect.width / 2);
+    const y = e.clientY - rect.top - (rect.height / 2);
+    
+    // Smooth 15-degree max rotation mapping
+    const rotateX = (y / (rect.height / 2)) * -15; 
+    const rotateY = (x / (rect.width / 2)) * 15;
+    
+    setTilt({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 }); // reset smoothly
+  };
+
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showOverlays, setShowOverlays] = useState<boolean>(true);
@@ -316,8 +338,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
           <div
             style={{
               position: "relative",
-              width: "100%",
-              height: "100%",
+              display: "inline-block", // Tight wrapping
+              maxWidth: "100%",
+              maxHeight: "100%",
               transform: `scale(${zoomLevel}) translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
               transformOrigin: "center center",
               transition: isDragging || isPanning ? "none" : "transform 0.15s ease",
@@ -328,8 +351,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               src={primaryPreview}
               alt="Primary Satellite Scene"
               style={{
-                width: "100%",
-                height: "100%",
+                maxWidth: "100%",
+                maxHeight: "100%",
                 objectFit: "contain",
                 display: "block",
                 pointerEvents: "none",
@@ -354,9 +377,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                   src={secondaryPreview}
                   alt="Secondary Satellite Scene"
                   style={{
-                    width: "100%",
+                    width: "100%", // Match parent div size (which tight-wraps primary image)
                     height: "100%",
-                    objectFit: "contain",
+                    objectFit: "fill",
                     display: "block",
                   }}
                 />
@@ -420,6 +443,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 {layerFilters.boxes &&
                   boundingBoxes.map((b) => {
                     const [ymin, xmin, ymax, xmax] = b.box;
+                    const isRightEdge = xmax > 80;
+                    const isTopEdge = ymin < 5;
                     return (
                       <div
                         key={b.id}
@@ -441,8 +466,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                         <span
                           style={{
                             position: "absolute",
-                            top: "-20px",
-                            left: "0",
+                            top: isTopEdge ? "0" : "-20px",
+                            left: isRightEdge ? "auto" : "0",
+                            right: isRightEdge ? "0" : "auto",
                             backgroundColor: b.color,
                             color: "#ffffff",
                             fontSize: "0.68rem",
@@ -463,6 +489,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 {layerFilters.polygons &&
                   changePolygons.map((cp) => {
                     const [ymin, xmin, ymax, xmax] = cp.box;
+                    const isRightEdge = xmax > 80;
+                    const isBottomEdge = ymax > 95;
                     return (
                       <div
                         key={cp.id}
@@ -483,8 +511,11 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                         <span
                           style={{
                             position: "absolute",
-                            bottom: "-20px",
-                            left: "0",
+                            top: isBottomEdge ? "auto" : "100%",
+                            bottom: isBottomEdge ? "0" : "auto",
+                            left: isRightEdge ? "auto" : "0",
+                            right: isRightEdge ? "0" : "auto",
+                            marginTop: isBottomEdge ? "0" : "2px",
                             backgroundColor: cp.color,
                             color: "#ffffff",
                             fontSize: "0.68rem",
@@ -505,6 +536,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                 {layerFilters.fusion &&
                   fusionLayers.map((fl) => {
                     const [ymin, xmin, ymax, xmax] = fl.box;
+                    const isRightEdge = xmax > 80;
+                    const isTopEdge = ymin < 5;
                     return (
                       <div
                         key={fl.id}
@@ -524,8 +557,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                         <span
                           style={{
                             position: "absolute",
-                            top: "-20px",
-                            left: "0",
+                            top: isTopEdge ? "0" : "-20px",
+                            left: isRightEdge ? "auto" : "0",
+                            right: isRightEdge ? "0" : "auto",
                             backgroundColor: fl.color,
                             color: "#ffffff",
                             fontSize: "0.68rem",
@@ -544,14 +578,28 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             )}
           </div>
         ) : (
-          <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "40px" }}>
-            <Maximize2 size={32} color="var(--text-muted)" style={{ margin: "0 auto 12px", opacity: 0.5 }} />
-            <p style={{ fontSize: "0.95rem", color: "var(--text-main)", fontWeight: 600, marginBottom: "6px" }}>
-              No Satellite Scene Loaded
-            </p>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Select a benchmark scenario from the top bar or load raster files.
-            </p>
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden"
+            }}
+          >
+            <video 
+              src="/assets/preview.mp4" 
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ 
+                width: "100%", 
+                height: "100%", 
+                objectFit: "cover"
+              }}
+            />
           </div>
         )}
 

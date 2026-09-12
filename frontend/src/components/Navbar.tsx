@@ -81,11 +81,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "4px",
-          background: "var(--bg-card-subtle)",
-          padding: "3px",
-          borderRadius: "8px",
+          gap: "6px",
+          background: "var(--bg-card)",
+          padding: "4px",
+          borderRadius: "10px",
           border: "1px solid var(--border-subtle)",
+          boxShadow: "inset 0 2px 10px rgba(0,0,0,0.5)",
         }}
       >
         {scenarios.map((sc) => {
@@ -95,16 +96,31 @@ export const Navbar: React.FC<NavbarProps> = ({
               key={sc.id}
               onClick={() => onSelectScenario(sc)}
               style={{
-                background: isSelected ? "var(--bg-card)" : "transparent",
-                color: isSelected ? "var(--text-main)" : "var(--text-muted)",
-                border: isSelected ? "1px solid var(--border-subtle)" : "1px solid transparent",
+                background: isSelected ? "linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(2, 132, 199, 0.2))" : "transparent",
+                color: isSelected ? "#38bdf8" : "var(--text-muted)",
+                border: isSelected ? "1px solid rgba(56, 189, 248, 0.6)" : "1px solid transparent",
                 borderRadius: "6px",
-                padding: "4px 10px",
-                fontSize: "0.76rem",
-                fontWeight: isSelected ? 600 : 500,
+                padding: "6px 14px",
+                fontSize: "0.78rem",
+                fontWeight: isSelected ? 700 : 500,
                 cursor: "pointer",
-                transition: "all 0.15s ease",
-                boxShadow: isSelected ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: isSelected ? "0 0 15px rgba(14, 165, 233, 0.4), inset 0 0 10px rgba(14, 165, 233, 0.2)" : "none",
+                textShadow: isSelected ? "0 0 8px rgba(56, 189, 248, 0.8)" : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.color = "#e0f2fe";
+                  e.currentTarget.style.textShadow = "0 0 8px rgba(14, 165, 233, 0.5)";
+                  e.currentTarget.style.background = "rgba(14, 165, 233, 0.1)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.color = "var(--text-muted)";
+                  e.currentTarget.style.textShadow = "none";
+                  e.currentTarget.style.background = "transparent";
+                }
               }}
             >
               {sc.title.split(" ")[0]}
