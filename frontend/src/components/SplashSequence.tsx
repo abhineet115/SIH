@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Satellite, ShieldCheck, TerminalSquare } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Satellite, ShieldCheck } from "lucide-react";
 
 export function SplashSequence({ onComplete }: { onComplete: () => void }) {
   const [logs, setLogs] = useState<string[]>([]);

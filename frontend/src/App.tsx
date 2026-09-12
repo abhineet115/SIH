@@ -164,10 +164,6 @@ export function App() {
     setSecondaryPreview(null);
   };
 
-  const handleClearAll = () => {
-    handleClearPrimary();
-    handleClearSecondary();
-  };
 
   const [booted, setBooted] = useState(false);
 
@@ -212,7 +208,6 @@ export function App() {
               primaryPreview={primaryPreview}
               secondaryPreview={secondaryPreview}
               primaryMeta={primaryMeta}
-              secondaryMeta={secondaryMeta}
               boundingBoxes={result?.bounding_boxes || []}
               changePolygons={result?.change_polygons || []}
               fusionLayers={result?.fusion_layers || []}

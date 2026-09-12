@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function AnimatedStarfield() {
   const [stars, setStars] = useState<{ id: number, top: string, left: string, size: number, delay: number, duration: number, o: number }[]>([]);

@@ -9,8 +9,7 @@ import {
   Crosshair,
   Info,
   Sliders,
-  Check,
-  Maximize2
+  Check
 } from "lucide-react";
 import type { BoundingBox, ChangePolygon, FusionLayer, RasterMetadata } from "../types";
 
@@ -18,7 +17,6 @@ interface ImageViewerProps {
   primaryPreview: string | null;
   secondaryPreview: string | null;
   primaryMeta: RasterMetadata | null;
-  secondaryMeta?: RasterMetadata | null;
   boundingBoxes: BoundingBox[];
   changePolygons: ChangePolygon[];
   fusionLayers: FusionLayer[];
@@ -28,32 +26,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   primaryPreview,
   secondaryPreview,
   primaryMeta,
-  secondaryMeta,
   boundingBoxes,
   changePolygons,
   fusionLayers,
 }) => {
-  // 3D Parallax Tilt State
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const tiltContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!tiltContainerRef.current) return;
-    const rect = tiltContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - (rect.width / 2);
-    const y = e.clientY - rect.top - (rect.height / 2);
-    
-    // Smooth 15-degree max rotation mapping
-    const rotateX = (y / (rect.height / 2)) * -15; 
-    const rotateY = (x / (rect.width / 2)) * 15;
-    
-    setTilt({ x: rotateX, y: rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 }); // reset smoothly
-  };
-
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showOverlays, setShowOverlays] = useState<boolean>(true);
