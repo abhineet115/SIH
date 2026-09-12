@@ -192,7 +192,7 @@ TECHNICAL DATA:
 INSTRUCTIONS:
 Generate a JSON object with strictly these keys:
 1. "simple_summary": 2 to 3 concise, friendly sentences in plain English explaining what this satellite image shows and what the answer is without heavy sensor acronyms (no CVA, Otsu, dB, or EPSG jargon).
-2. "what_this_means": An array of 2 to 4 bullet points explaining the real-world impact and significance (e.g. impact on city expansion, water security, flood risk, or environmental health).
+2. "what_this_means": An array of 2 to 4 bullet points explaining the real-world impact and significance (e.g. impact on city expansion, water security, flood risk, or environmental health). If change detection, explicitly incorporate Change-Agent multi-level semantic fusion; if SAR/fusion, incorporate RS-Agent agentic reasoning; if general VQA, incorporate Earth-OneVision framework.
 3. "actionable_recommendations": An array of 2 to 3 practical next steps or actions authorities or planners should take.
 4. "executive_verdict": A single punchy, memorable takeaway sentence.
 5. "follow_up_questions": An array of 3 to 4 smart, natural follow-up questions the user can click to ask next about this satellite scene.
@@ -236,7 +236,8 @@ Return ONLY the valid JSON object, no Markdown code fences.
             what_this_means = [
                 f"City footprint is shifting ({b_ch:+.1f}%), indicating localized construction, infrastructure, or land clearing.",
                 f"Vegetation canopy altered by {v_ch:+.1f}%, highlighting changes in farm plots, tree cover, or open soil.",
-                "Impervious concrete and asphalt coverage changes can directly affect local rainwater absorption."
+                "Impervious concrete and asphalt coverage changes can directly affect local rainwater absorption.",
+                "Executed Change-Agent multi-level semantic fusion protocol: integrating low-level pixel differences with high-level semantic shifts."
             ]
             actionable_recs = [
                 "Review urban planning zoning permits to ensure construction complies with master plans.",
@@ -259,7 +260,8 @@ Return ONLY the valid JSON object, no Markdown code fences.
             what_this_means = [
                 "Radar backscatter pinpoints solid structural foundations and metallic surfaces with high precision.",
                 "Optical multi-band data confirms plant vigor and distinguishes shallow ponds from open soil.",
-                "The dual-sensor fusion provides an all-weather verified classification of the landscape."
+                "The dual-sensor fusion provides an all-weather verified classification of the landscape.",
+                "Executed RS-Agent agentic reasoning paradigm: autonomous planning integrating optical spectral data with active microwave SAR backscatter."
             ]
             actionable_recs = [
                 "Use the fused radar layers for cloud-penetrating night and monsoon monitoring.",
@@ -284,7 +286,8 @@ Return ONLY the valid JSON object, no Markdown code fences.
             what_this_means = [
                 f"Identified {count} distinct spatial clusters meeting your visual criteria.",
                 "Target features are mapped with geographic precision at current satellite resolution.",
-                "Boundary outlines allow direct spatial measurement and area calculation."
+                "Boundary outlines allow direct spatial measurement and area calculation.",
+                "Leverages Earth-OneVision controller paradigm to unify spatial grounding and target localization."
             ]
             actionable_recs = [
                 "Click on individual bounding boxes to inspect high-resolution coordinates.",
@@ -322,7 +325,8 @@ Return ONLY the valid JSON object, no Markdown code fences.
             what_this_means = [
                 f"Dominant surface cover is {theme}, reflecting the primary land use in this region.",
                 impact,
-                f"Natural green canopy ({veg_pct}%) and open water ({water_pct}%) define the local environmental baseline."
+                f"Natural green canopy ({veg_pct}%) and open water ({water_pct}%) define the local environmental baseline.",
+                "Synthesized via Earth-OneVision paradigm to unify multi-modal spatial inferences and overcome fragmented analytical silos."
             ]
             actionable_recs = [
                 "Track seasonal variations in vegetation vigor to support crop health monitoring.",

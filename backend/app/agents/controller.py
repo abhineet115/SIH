@@ -78,7 +78,7 @@ class AgenticController:
             modalities.append(secondary_modality["modality"])
 
         image_count = 2 if secondary_path else 1
-        intent_decision = AgentClassifier.classify_intent(query, image_count, modalities)
+        intent_decision = AgentClassifier.classify_intent(query, image_count, modalities, gemini_api_key, gemini_model)
         intent = intent_decision["intent"]
         step3_dur = round((time.time() - step3_start) * 1000, 1)
 

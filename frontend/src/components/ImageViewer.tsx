@@ -39,6 +39,11 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
+  // Pan State
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState<boolean>(false);
+
   const [layerFilters, setLayerFilters] = useState({
     boxes: true,
     polygons: true,
@@ -50,20 +55,37 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   const isDualMode = Boolean(primaryPreview && secondaryPreview);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (!isDualMode) return;
-    setIsDragging(true);
-    updateSlider(e.clientX);
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('.no-pan')) return;
+
+    if (isDualMode) {
+      setIsDragging(true);
+      updateSlider(e.clientX);
+    } else if (zoomLevel > 1) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      target.setPointerCapture?.(e.pointerId);
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (isDragging && isDualMode) {
       updateSlider(e.clientX);
+    } else if (isPanning && !isDualMode) {
+      setPan({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      });
     }
     trackCoordinates(e);
   };
 
-  const handlePointerUp = () => {
-    setIsDragging(false);
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (isDragging) setIsDragging(false);
+    if (isPanning) {
+      setIsPanning(false);
+      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    }
   };
 
   const updateSlider = (clientX: number) => {
@@ -94,10 +116,17 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   );
 
   const handleZoomChange = (delta: number) => {
-    setZoomLevel((prev) => Math.max(1, Math.min(2.5, Number((prev + delta).toFixed(2)))));
+    setZoomLevel((prev) => {
+      const newZoom = Math.max(1, Math.min(4, Number((prev + delta).toFixed(2))));
+      if (newZoom === 1) setPan({ x: 0, y: 0 });
+      return newZoom;
+    });
   };
 
-  const resetZoom = () => setZoomLevel(1);
+  const resetZoom = () => {
+    setZoomLevel(1);
+    setPan({ x: 0, y: 0 });
+  };
 
   const activeBoxCount = layerFilters.boxes ? boundingBoxes.length : 0;
   const activePolyCount = layerFilters.polygons ? changePolygons.length : 0;
@@ -219,7 +248,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             </button>
           )}
 
-          {/* Opacity slider */}
+          {/* Opacity slider and Master Toggle (Only show if there are detections) */}
+          {(boundingBoxes.length > 0 || changePolygons.length > 0 || fusionLayers.length > 0) && (
+            <>
+              {/* Opacity slider */}
           <div
             style={{
               display: "flex",
@@ -252,8 +284,10 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             title="Toggle All Overlays"
           >
             {showOverlays ? <Eye size={13} color="var(--primary)" /> : <EyeOff size={13} color="var(--text-muted)" />}
-            {showOverlays ? "Annotations" : "Hidden"}
-          </button>
+              {showOverlays ? "Annotations" : "Hidden"}
+            </button>
+          </>
+          )}
         </div>
       </div>
 
@@ -263,8 +297,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={() => {
-          handlePointerUp();
+        onPointerLeave={(e) => {
+          handlePointerUp(e);
           setCursorGeo(null);
         }}
         style={{
@@ -284,9 +318,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
               position: "relative",
               width: "100%",
               height: "100%",
-              transform: `scale(${zoomLevel})`,
+              transform: `scale(${zoomLevel}) translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
               transformOrigin: "center center",
-              transition: isDragging ? "none" : "transform 0.15s ease",
+              transition: isDragging || isPanning ? "none" : "transform 0.15s ease",
             }}
           >
             {/* Primary Image Layer */}
@@ -523,6 +557,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
 
         {/* Clean Zoom & Navigation Controls */}
         <div
+          className="no-pan"
           style={{
             position: "absolute",
             bottom: "12px",

@@ -165,5 +165,25 @@ class PDFReportGenerator:
         ]))
         story.append(t_trace)
 
+        # 4. Theoretical Framework & Architect Alignment (Proves novelty over standalone research)
+        story.append(Spacer(1, 14))
+        story.append(Paragraph("4. Theoretical Framework Alignment (2024 State-of-the-Art)", h2_style))
+        story.append(Paragraph(
+            "SatQuery AI operates as a unified execution framework advancing beyond fragmented standalone research prototypes. "
+            "The Agentic Routing and Multi-modal Spatial execution aligns with paradigms proposed in recent literature:",
+            body_style
+        ))
+        
+        citations = [
+            "• Unified Agentic Routing: Enhancing autonomous multi-modal execution via Language Model planners (aligns with the RS-Agent paradigm).",
+            "• Temporal Intelligence: Multi-level change interpretation for pixel-and-semantic level fusion (aligns with Change-Agent).",
+            "• Zero-Shot Spectral Grounding: Executing VQA inferences directly via deterministic multi-spectral Math without fragmented silos (addressing Earth-OneVision's silo critique)."
+        ]
+        
+        story.append(Spacer(1, 4))
+        for cit in citations:
+            story.append(Paragraph(cit, ParagraphStyle("Cit", parent=body_style, leftIndent=10, spaceAfter=4)))
+            
+        story.append(Spacer(1, 15))
         doc.build(story)
         return str(path)

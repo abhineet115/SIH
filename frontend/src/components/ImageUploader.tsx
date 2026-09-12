@@ -17,6 +17,7 @@ interface ImageUploaderProps {
   secondaryMeta: RasterMetadata | null;
   onPrimaryUploaded: (meta: RasterMetadata, path: string) => void;
   onSecondaryUploaded: (meta: RasterMetadata, path: string) => void;
+  onClearPrimary: () => void;
   onClearSecondary: () => void;
 }
 
@@ -27,6 +28,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   secondaryMeta,
   onPrimaryUploaded,
   onSecondaryUploaded,
+  onClearPrimary,
   onClearSecondary,
 }) => {
   const primaryInputRef = useRef<HTMLInputElement>(null);
@@ -141,9 +143,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <RefreshCw size={11} />
               </button>
             )}
-            {!isPrimary && meta && (
+            {meta && (
               <button
-                onClick={onClearSecondary}
+                onClick={isPrimary ? onClearPrimary : onClearSecondary}
                 style={{
                   background: "transparent",
                   border: "none",

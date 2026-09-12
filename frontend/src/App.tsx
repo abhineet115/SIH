@@ -74,9 +74,6 @@ export function App() {
         const list = await fetchSampleScenarios();
         setScenarios(list);
         setBackendOnline(true);
-        if (list.length > 0) {
-          selectScenario(list[0]);
-        }
       } catch (err) {
         console.warn("Backend offline or still starting...", err);
         setBackendOnline(false);
@@ -100,9 +97,14 @@ export function App() {
       setSecondaryPath(null);
       setSecondaryPreview(null);
     }
+  };
 
-    // Auto-run scenario default query
-    handleRunQuery(sc.default_query, sc.primary_path, sc.secondary_path);
+  const handleClearPrimary = () => {
+    setPrimaryMeta(null);
+    setPrimaryPath(null);
+    setPrimaryPreview(null);
+    setResult(null); // Clear results when image is removed
+    setCurrentScenario(null);
   };
 
   const handleRunQuery = async (
@@ -160,6 +162,11 @@ export function App() {
     setSecondaryPreview(null);
   };
 
+  const handleClearAll = () => {
+    handleClearPrimary();
+    handleClearSecondary();
+  };
+
   return (
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--bg-main)" }}>
       {/* Clean Header with Scenario Switcher, Gemini AI Settings, and Theme Toggle */}
@@ -202,16 +209,14 @@ export function App() {
             />
           </div>
 
-          {/* Compact Ingestion Card */}
-          <div style={{ flexShrink: 0 }}>
             <ImageUploader
               primaryMeta={primaryMeta}
               secondaryMeta={secondaryMeta}
               onPrimaryUploaded={handlePrimaryUploaded}
               onSecondaryUploaded={handleSecondaryUploaded}
+              onClearPrimary={handleClearPrimary}
               onClearSecondary={handleClearSecondary}
             />
-          </div>
         </section>
 
         {/* Right Pane: Query Input & Results */}

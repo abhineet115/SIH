@@ -1,20 +1,39 @@
-from typing import Dict, Any, List
+import os
+import json
+from typing import Dict, Any, List, Optional
+from app.config import GEMINI_API_KEY, GEMINI_MODEL
 
 class AgentClassifier:
     """
-    Agentic Intent Classifier:
-    Examines natural-language query semantics, input image count,
-    and sensor modalities to route requests to the optimal specialist workflow.
+    True Agentic Intent Classifier:
+    Uses an LLM (Gemini) to evaluate natural-language query semantics,
+    input image count, and sensor modalities to route requests to the optimal specialist workflow.
+    Falls back to smart local heuristics if no API key is provided or offline.
     """
 
     @staticmethod
     def classify_intent(
         query: str,
         image_count: int = 1,
-        modalities: List[str] | None = None
+        modalities: List[str] | None = None,
+        api_key: Optional[str] = None,
+        model_name: Optional[str] = None
     ) -> Dict[str, Any]:
-        q_lower = query.lower().strip()
         modalities = modalities or ["OPTICAL"]
+
+        # Attempt to use true LLM Agentic routing first
+        active_key = api_key or os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY
+        if active_key and active_key.strip():
+            try:
+                llm_decision = AgentClassifier._llm_classify(
+                    query, image_count, modalities, active_key.strip(), model_name
+                )
+                if llm_decision:
+                    return llm_decision
+            except Exception as e:
+                print(f"[AgentClassifier] LLM routing failed, falling back to heuristic: {e}")
+        
+        q_lower = query.lower().strip()
 
         has_sar = "SAR" in modalities
         has_optical = "OPTICAL" in modalities or "MULTISPECTRAL" in modalities
@@ -63,3 +82,47 @@ class AgentClassifier:
             "confidence": 0.92,
             "reasoning": "Natural language inquiry regarding scene properties, counts, or categorization. Routed to Remote Sensing VLM Specialist."
         }
+
+    @staticmethod
+    def _llm_classify(query: str, image_count: int, modalities: List[str], api_key: str, model_name: Optional[str]) -> Optional[Dict[str, Any]]:
+        import google.generativeai as genai
+        active_model = model_name or os.getenv("GEMINI_MODEL") or GEMINI_MODEL or "gemini-2.5-flash"
+        
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(active_model)
+        
+        prompt = f"""
+You are an expert Agentic Router for a Remote Sensing AI platform.
+Analyze the user's query and the available image parameters, and decide which specialist engine should handle the request.
+
+User Query: "{query}"
+Number of Satellite Images Provided: {image_count}
+Available Sensor Modalities: {modalities}
+
+Available Intents:
+1. OPTICAL_SAR_FUSION: Used if the user explicitly asks to combine/fuse Optical and SAR data. Only valid if image count is >= 2.
+2. CHANGE_DETECTION: Used if the user asks about temporal changes, "before and after", growth, delta, or differences. Only valid if image count is >= 2.
+3. GROUNDING: Used if the user asks to "highlight", "detect", "locate", "bound", "pinpoint" specific entities or draw bounding boxes.
+4. CAPTION: Used if the user asks for a general scene description, overview, or caption.
+5. VQA: Used for general questions (counts, condition, what is in the image) that don't fit above.
+
+Return ONLY a valid JSON object with the following structure:
+{{
+    "intent": "INTENT_NAME_HERE",
+    "confidence": 0.98,
+    "reasoning": "A 1-sentence technical explanation of why you routed to this specialist based on the query semantics."
+}}
+"""
+        response = model.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json", "temperature": 0.1}
+        )
+        if response and response.text:
+            data = json.loads(response.text)
+            if "intent" in data and "reasoning" in data:
+                # Add a marker so we know it was LLM routed
+                data["reasoning"] = f"[LLM Routed] {data['reasoning']}"
+                if "confidence" not in data:
+                    data["confidence"] = 0.95
+                return data
+        return None
