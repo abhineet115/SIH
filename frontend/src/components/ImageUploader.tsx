@@ -101,6 +101,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           else setSecondaryDragOver(false);
         }}
         onDrop={(e) => handleDrop(e, isPrimary)}
+        onClick={() => {
+          if (!meta && !isUploading) {
+            inputRef.current?.click();
+          }
+        }}
         style={{
           flex: 1,
           padding: "10px 12px",
@@ -115,6 +120,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           flexDirection: "column",
           gap: "6px",
           minWidth: 0,
+          cursor: (!meta && !isUploading) ? "pointer" : "default",
+          transition: "all 0.2s ease-in-out",
         }}
       >
         {/* Header */}
