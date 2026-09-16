@@ -37,6 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         justifyContent: "space-between",
         gap: "16px",
         zIndex: 50,
+        background: theme === "dark" 
+          ? "linear-gradient(90deg, rgba(8, 14, 25, 0.85) 0%, rgba(4, 8, 18, 0.95) 50%, rgba(8, 14, 25, 0.85) 100%)"
+          : "linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.95) 50%, rgba(255, 255, 255, 0.9) 100%)",
+        borderBottom: theme === "dark" ? "1px solid rgba(14, 165, 233, 0.25)" : "1px solid var(--border-subtle)",
+        boxShadow: theme === "dark" ? "0 4px 24px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05)" : "0 4px 15px rgba(0, 0, 0, 0.05)",
       }}
     >
       {/* Left: Branding */}
@@ -77,57 +82,59 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Center: Scenario Switcher Pills */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          background: "var(--bg-card)",
-          padding: "4px",
-          borderRadius: "10px",
-          border: "1px solid var(--border-subtle)",
-          boxShadow: "inset 0 2px 10px rgba(0,0,0,0.5)",
-        }}
-      >
-        {scenarios.map((sc) => {
-          const isSelected = currentScenario?.id === sc.id;
-          return (
-            <button
-              key={sc.id}
-              onClick={() => onSelectScenario(sc)}
-              style={{
-                background: isSelected ? "linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(2, 132, 199, 0.2))" : "transparent",
-                color: isSelected ? "#38bdf8" : "var(--text-muted)",
-                border: isSelected ? "1px solid rgba(56, 189, 248, 0.6)" : "1px solid transparent",
-                borderRadius: "6px",
-                padding: "6px 14px",
-                fontSize: "0.78rem",
-                fontWeight: isSelected ? 700 : 500,
-                cursor: "pointer",
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: isSelected ? "0 0 15px rgba(14, 165, 233, 0.4), inset 0 0 10px rgba(14, 165, 233, 0.2)" : "none",
-                textShadow: isSelected ? "0 0 8px rgba(56, 189, 248, 0.8)" : "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.color = "#e0f2fe";
-                  e.currentTarget.style.textShadow = "0 0 8px rgba(14, 165, 233, 0.5)";
-                  e.currentTarget.style.background = "rgba(14, 165, 233, 0.1)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.color = "var(--text-muted)";
-                  e.currentTarget.style.textShadow = "none";
-                  e.currentTarget.style.background = "transparent";
-                }
-              }}
-            >
-              {sc.title.split(" ")[0]}
-            </button>
-          );
-        })}
-      </div>
+      {scenarios.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "var(--bg-card)",
+            padding: "4px",
+            borderRadius: "10px",
+            border: "1px solid var(--border-subtle)",
+            boxShadow: "inset 0 2px 10px rgba(0,0,0,0.5)",
+          }}
+        >
+          {scenarios.map((sc) => {
+            const isSelected = currentScenario?.id === sc.id;
+            return (
+              <button
+                key={sc.id}
+                onClick={() => onSelectScenario(sc)}
+                style={{
+                  background: isSelected ? "linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(2, 132, 199, 0.2))" : "transparent",
+                  color: isSelected ? "#38bdf8" : "var(--text-muted)",
+                  border: isSelected ? "1px solid rgba(56, 189, 248, 0.6)" : "1px solid transparent",
+                  borderRadius: "6px",
+                  padding: "6px 14px",
+                  fontSize: "0.78rem",
+                  fontWeight: isSelected ? 700 : 500,
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: isSelected ? "0 0 15px rgba(14, 165, 233, 0.4), inset 0 0 10px rgba(14, 165, 233, 0.2)" : "none",
+                  textShadow: isSelected ? "0 0 8px rgba(56, 189, 248, 0.8)" : "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) {
+                    e.currentTarget.style.color = "#e0f2fe";
+                    e.currentTarget.style.textShadow = "0 0 8px rgba(14, 165, 233, 0.5)";
+                    e.currentTarget.style.background = "rgba(14, 165, 233, 0.1)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) {
+                    e.currentTarget.style.color = "var(--text-muted)";
+                    e.currentTarget.style.textShadow = "none";
+                    e.currentTarget.style.background = "transparent";
+                  }
+                }}
+              >
+                {sc.title.split(" ")[0]}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Right: Theme Toggle, Connection Status & Actions */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
