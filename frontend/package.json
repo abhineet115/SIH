@@ -1,5 +1,6 @@
 {
   "name": "frontend",
+  "author": "Aditya Singh Rajput <singhaditya0443@gmail.com>",
   "private": true,
   "version": "0.0.0",
   "type": "module",

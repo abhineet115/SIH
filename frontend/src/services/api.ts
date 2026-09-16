@@ -1,6 +1,7 @@
 import type { AnalysisResult, SampleScenario, RasterMetadata } from "../types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const isProd = import.meta.env.PROD;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || (isProd ? "https://satquery-backend.onrender.com/api" : "http://localhost:8000/api");
 
 export async function fetchSampleScenarios(): Promise<SampleScenario[]> {
   const resp = await fetch(`${API_BASE}/samples`);

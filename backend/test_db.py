@@ -15,7 +15,7 @@ def test_database_flow():
     # Create dummy user if not exists
     user = db.query(User).first()
     if not user:
-        user = User(name="ISRO Scientist Abhineet", role="Lead Remote Sensing Scientist")
+        user = User(name="ISRO Scientist Aditya Singh Rajput", role="Lead Remote Sensing Scientist")
         db.add(user)
         db.commit()
         db.refresh(user)
